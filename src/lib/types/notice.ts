@@ -25,14 +25,35 @@ export interface Notice {
   priority: Priority | null;
   url: string | null;
   eligibility_summary: string | null; // Claude 요약 캐시 (U4)
+  eligibility: EligibilityCriteria | null; // 구조화 자격조건 (v2, U1 CriteriaExtractor 적재)
   raw: unknown;
   created_at: string; // timestamptz
   updated_at: string;
 }
 
+/**
+ * 공고별 구조화 자격조건 (notices.eligibility JSONB). v2 — FR-9 입력.
+ * CriteriaExtractor가 베스트에포트로 채우므로 모든 필드는 선택적(부분 채움 허용).
+ * 근거: components.md "EligibilityCriteria", requirements.md §12.4
+ */
+export interface EligibilityCriteria {
+  supplyTypes: string[]; // 공급유형 (신혼특공·신혼희망타운·생애최초·일반 등)
+  incomePctLimit?: number; // 도시근로자 월평균소득 대비 한도(%)
+  assetLimit?: number; // 총자산 한도(원)
+  carLimit?: number; // 자동차가액 한도(원)
+  residencyReq?: { region: string; months: number }; // 거주요건(지역/기간)
+  savingsReq?: { months: number; count: number }; // 청약통장(기간/납입횟수)
+  preNewlywedAllowed?: boolean; // 예비신혼 신청 가능
+  firstTimeEligible?: boolean; // 생애최초 대상
+}
+
 /** 수집 단계에서 만들어 upsert로 넘기는 입력(타임스탬프는 DB가 채움). */
-export type NoticeInput = Omit<Notice, "created_at" | "updated_at"> & {
+export type NoticeInput = Omit<
+  Notice,
+  "created_at" | "updated_at" | "eligibility_summary" | "eligibility"
+> & {
   eligibility_summary?: string | null;
+  eligibility?: EligibilityCriteria | null; // U1 CriteriaExtractor가 채움 (v2)
 };
 
 /** 화면 필터 (NoticeFilter). 모든 조건은 AND 결합 (BR-3). */

@@ -1,5 +1,12 @@
 # U1 수집 파이프라인 — Code Summary
 
+## v2 보강 (2026-06-24, 부부 추천 방향전환)
+- `criteria.ts` (신규) — **CriteriaExtractor (C28)**: `extractSupplyTypes`(키워드→공급유형 라벨), `extractCriteria`(supplyTypes·소득%·총자산/자동차 한도·거주요건·청약통장·예비신혼/생애최초 베스트에포트, 신호 없으면 null), `REGION_SCOPE`/`isRegionInScope`(**C-6 서울·경기 한정**, sido null은 유지).
+- `normalize.ts` — 범위 밖 시도 **드롭**(C-6) + `eligibility` 추출 적재(FR-9); `RawNotice.eligibilityText` 추가.
+- `types.ts` — `EligibilityCriteria` 미러 + `NoticeInput.eligibility` 추가. Edge `upsert`는 0004 RPC로 그대로 전달(변경 불필요).
+- 마이그레이션 `0004_eligibility_and_profile.sql`(U2) — `notices.eligibility` JSONB + `household_profile` 단일행 + upsert_notices 재정의(eligibility 적재).
+- 테스트: `criteria.test.ts`(13) + `normalize.test.ts`(+4). **vitest 60 passed**, tsc clean.
+
 ## 생성 파일 (Created)
 
 ### Edge Function (Deno) — `supabase/functions/collect/`

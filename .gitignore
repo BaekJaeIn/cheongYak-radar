@@ -23,6 +23,7 @@
 .DS_Store
 *.log
 /coverage
+*.tsbuildinfo
 
 # 민감 개인·금융 정보 — 공개 레포에 올리지 않음 (로컬 전용)
 aidlc-docs/inception/requirements/household-profile.md

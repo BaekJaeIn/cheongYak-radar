@@ -4,6 +4,22 @@
 export type SourceType = "apt" | "lh" | "sh" | "private";
 export type Priority = "1순위" | "2순위" | "무순위";
 
+/**
+ * 공고별 구조화 자격조건 (notices.eligibility JSONB 적재). v2 — FR-9 입력.
+ * src/lib/types/notice.ts의 EligibilityCriteria 미러 (Deno 자기완결성).
+ * CriteriaExtractor가 베스트에포트로 채우므로 모든 필드는 선택적.
+ */
+export interface EligibilityCriteria {
+  supplyTypes: string[];
+  incomePctLimit?: number; // 도시근로자 월평균소득 대비 한도(%)
+  assetLimit?: number; // 총자산 한도(원)
+  carLimit?: number; // 자동차가액 한도(원)
+  residencyReq?: { region: string; months: number };
+  savingsReq?: { months: number; count: number };
+  preNewlywedAllowed?: boolean;
+  firstTimeEligible?: boolean;
+}
+
 export interface NoticeInput {
   id: string;
   source_no: string;
@@ -23,6 +39,7 @@ export interface NoticeInput {
   priority: Priority | null;
   url: string | null;
   eligibility_summary?: string | null;
+  eligibility?: EligibilityCriteria | null; // CriteriaExtractor 결과 (v2)
   raw: unknown;
 }
 

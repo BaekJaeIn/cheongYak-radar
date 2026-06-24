@@ -88,4 +88,38 @@ describe("normalize (BR-1 통합)", () => {
     const n = normalize("sh", { source_no: "S1", title: "장기전세", address: "정보없음" });
     expect(n!.region_sido).toBe("서울");
   });
+
+  it("수집 범위(서울·경기) 밖이면 null로 드롭한다 (C-6)", () => {
+    const n = normalize("apt", {
+      source_no: "B1",
+      title: "부산 해운대 분양",
+      address: "부산광역시 해운대구",
+    });
+    expect(n).toBeNull();
+  });
+
+  it("시도 미파악이면 유지한다 (베스트에포트)", () => {
+    const n = normalize("private", { source_no: "P1", title: "민간임대", address: "정보없음" });
+    expect(n).not.toBeNull();
+  });
+
+  it("eligibility(자격조건)를 베스트에포트로 채운다 (FR-9)", () => {
+    const n = normalize("apt", {
+      source_no: "E1",
+      title: "과천 신혼부부 특별공급",
+      address: "경기도 과천시",
+      supplyType: "신혼부부 특별공급",
+    });
+    expect(n!.eligibility).not.toBeNull();
+    expect(n!.eligibility!.supplyTypes).toContain("신혼부부특별공급");
+  });
+
+  it("자격 신호가 없으면 eligibility=null", () => {
+    const n = normalize("lh", {
+      source_no: "E2",
+      title: "입주자 모집 안내",
+      address: "경기도 군포시",
+    });
+    expect(n!.eligibility).toBeNull();
+  });
 });

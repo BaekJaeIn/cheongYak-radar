@@ -341,3 +341,51 @@
 **Context**: Change Request — Stories/Design/Units revised; approval gate before construction (0004 migration → U1 → U6...)."
 
 ---
+
+## Resume — Construction v2 Cascade Approved / Migration 0004 Implemented
+**Timestamp**: 2026-06-24T12:30:00Z
+**User Input**: "ai-dlc를 진행중이었어. 어디까지 했는데 찾아서 이어서 진행해줘"
+**AI Response**: "Located workflow position at the INCEPTION-revision approval gate (last audit 11:50). Interpreted '이어서 진행' as approval to resume construction. Executed first v2 item — U2 migration 0004 (0004_eligibility_and_profile.sql): added notices.eligibility(JSONB) + GIN index; household_profile single-row table (id=1 CHECK, RLS anon-blocked for PII); upsert_household_profile RPC; redefined upsert_notices to persist eligibility (coalesce-preserve per BR-2.3). Added src/lib/types EligibilityCriteria (on Notice/NoticeInput optional) + profile.ts HouseholdProfile; mapped eligibility in toRpcRow. Ran npm install (deps were absent), vitest 43 passed, tsc --noEmit clean. Updated aidlc-state.md (0004 [x])."
+**Context**: CONSTRUCTION (v2) — migration 0004 done. Next: U1 criteria 보강 (CriteriaExtractor + 서울·경기 한정), then Unit U6.
+
+---
+
+## Construction v2 — U1 Criteria 보강 + 지역 한정 Implemented
+**Timestamp**: 2026-06-24T12:55:00Z
+**User Input**: "진행"
+**AI Response**: "Implemented U1 v2 보강. Added supabase/functions/collect/criteria.ts (CriteriaExtractor C28): extractSupplyTypes (키워드→라벨), extractCriteria (supplyTypes + incomePctLimit% + assetLimit/carLimit 억·만원→원 + residencyReq 년→개월 + savingsReq + preNewlywed/firstTime 플래그, 신호 없으면 null), REGION_SCOPE + isRegionInScope (C-6 서울·경기, null=유지). Mirrored EligibilityCriteria in Edge types.ts + eligibility field on NoticeInput. Wired normalize(): 범위 밖 드롭 + eligibility 추출 적재; RawNotice +eligibilityText. Edge upsert passes eligibility through to 0004 RPC (no change needed). Added criteria.test.ts (13) + normalize.test.ts (+4: 드롭/유지/eligibility 채움·null). vitest 60 passed (was 43), tsc clean. Updated state (U1 보강 [x]; next=U6)."
+**Context**: CONSTRUCTION (v2) — U1 criteria 보강 + 지역 한정 done. Next: Unit U6 (Functional → Infra → Code).
+
+---
+
+## U6 Functional Design — PART 1 Plan + Questions Created
+**Timestamp**: 2026-06-24T13:10:00Z
+**User Input**: "진행"
+**AI Response**: "Started Unit U6 (프로필·자격매칭·추천) Functional Design. Analyzed unit context (unit-of-work U6, stories E6 US-6.1~6.7, components C25~C28 + domain models). Created U6-recommendation-functional-design-plan.md with artifacts checklist (domain-entities/business-rules/business-logic-model; UI C29~C32 deferred to U3/U4 → no frontend-components) and 6 embedded [Answer] questions: Q-FU6-1 계산·저장 전략(precompute+persist vs on-demand), Q-FU6-2 정보부족 판정 정책(조건부통과 vs 제외), Q-FU6-3 기준표 config 형식·연도, Q-FU6-4 점수 가중치, Q-FU6-5 추천 사유 생성(규칙/Claude), Q-FU6-6 공급유형 범위. Paused at gate for answers."
+**Context**: CONSTRUCTION — U6 Functional Design PART 1; awaiting question answers.
+
+---
+
+## U6 Functional Design — Answers Received / Artifacts Generated
+**Timestamp**: 2026-06-24T13:25:00Z
+**User Input**: "6번만 B로 하고 나머지는 추천안으로 해줘"
+**AI Response**: "Recorded answers Q-FU6-1=A(precompute+persist recommendations), Q-FU6-2=A(lean inclusive 조건부 통과), Q-FU6-3=A(연도별 config 파일), Q-FU6-4=A(기본 가중치 세트), Q-FU6-5=A(규칙 템플릿+선택 Claude), Q-FU6-6=B(임대 포함 전체 공급유형). No ambiguity. Generated 3 functional-design artifacts: domain-entities.md (HouseholdProfile/EligibilityCriteria/CriteriaTable/MatchResult{eligible|conditional|ineligible}/Recommendation+scoreBreakdown), business-rules.md (BR-U6-1~17: 핵심선결·소득·자산·통장·거주·예비신혼/생애최초·정보부족 lean inclusive·임대포함 범위·점수 가중치 희망지역40/자격여유20/면적15/순위15/마감10·신규추천 diff·RLS), business-logic-model.md (C25 ProfileRepository·C26 EligibilityMatcher.evaluate·C27 RecommendationEngine.rank·S6 RecommendationService.recomputeAll/recomputeForCollected + 수집/Push 연계). Marked plan checkboxes [x]. Presenting REVIEW REQUIRED; next = U6 Infrastructure Design."
+**Context**: CONSTRUCTION — U6 Functional Design artifacts complete; approval gate before U6 Infrastructure Design.
+
+---
+
+## U6 Functional Design — Approved / Infrastructure Design PART 1
+**Timestamp**: 2026-06-24T13:35:00Z
+**User Input**: "승인"
+**AI Response**: "User approved U6 functional design. Marked Functional Design [x] for U6. Started U6 Infrastructure Design. Created U6-recommendation-infrastructure-design-plan.md with artifacts checklist (infrastructure-design.md, deployment-architecture.md) and 4 embedded [Answer] questions: Q-IU6-1 recommendations RLS, Q-IU6-2 재계산 실행 위치, Q-IU6-3 criteria config 형식, Q-IU6-4 프로필 접근 경로. Paused at gate for answers."
+**Context**: CONSTRUCTION — U6 Infrastructure Design PART 1; awaiting answers.
+
+---
+
+## U6 Infrastructure Design — Answers Received / Artifacts Generated
+**Timestamp**: 2026-06-24T13:50:00Z
+**User Input**: "전부 추천안으로 해줘"
+**AI Response**: "Recorded Q-IU6-1=A(recommendations anon read + service_role write), Q-IU6-2=A(recompute integrated into collect Edge Function), Q-IU6-3=A(criteria-2026.ts TS config), Q-IU6-4=A(Next Route Handler /api/profile + service_role). Generated infrastructure-design.md (recommendations 테이블/RLS/0005, upsert_recommendations+prune RPC with first_recommended_at preserve & was_inserted=신규추천, recompute in collect, recommend/ pure modules, criteria TS config, /api/profile path, ANTHROPIC reuse, push hook) + deployment-architecture.md (0005 migration, collect dir layout recommend/*, /api/profile, full trigger chain collect→recompute→push, env reuse, rollout order). Marked plan + state Infrastructure Design [x]. Presenting REVIEW REQUIRED; next = U6 Code Generation."
+**Context**: CONSTRUCTION — U6 Infrastructure Design complete; approval gate before U6 Code Generation.
+
+---

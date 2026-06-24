@@ -1,6 +1,7 @@
 // 정규화 헬퍼 (순수, BR-U1-1~5). Deno/Node 공통 — vitest 테스트 가능.
 
 import { parseRegion } from "./region-alias.ts";
+import { extractCriteria, isRegionInScope } from "./criteria.ts";
 import { makeNoticeId, type NoticeInput, type Priority, type SourceType } from "./types.ts";
 
 /** 면적 텍스트에서 min/max(㎡) 추출. "전용 46.97㎡", "46~59㎡", "84.95" 등. */
@@ -47,10 +48,14 @@ export interface RawNotice {
   apply_end?: string | null;
   winner_date?: string | null;
   url?: string | null;
+  eligibilityText?: string | null; // 자격요건 본문(있으면 criteria 추출에 사용)
   raw?: unknown;
 }
 
-/** RawNotice → NoticeInput 정규화. 필수 필드 없으면 null 반환(호출부 skip). */
+/**
+ * RawNotice → NoticeInput 정규화. 필수 필드 없으면 null 반환(호출부 skip).
+ * v2: 수집 범위(서울·경기) 밖이면 null로 드롭(C-6), eligibility 베스트에포트 추출(FR-9).
+ */
 export function normalize(source: SourceType, r: RawNotice): NoticeInput | null {
   if (!r.source_no || !r.title) return null;
 
@@ -60,6 +65,11 @@ export function normalize(source: SourceType, r: RawNotice): NoticeInput | null 
 
   // SH는 서울 고정 보정
   const sido = region.sido ?? (source === "sh" ? "서울" : null);
+
+  // 수집 지역 한정: 서울·경기 밖이면 드롭 (C-6). sido 미파악(null)은 유지.
+  if (!isRegionInScope(sido)) return null;
+
+  const eligibility = extractCriteria([r.title, r.supplyType, r.eligibilityText]);
 
   return {
     id: makeNoticeId(source, r.source_no),
@@ -79,6 +89,7 @@ export function normalize(source: SourceType, r: RawNotice): NoticeInput | null 
     pre_newlywed: nl.preNewlywed,
     priority: mapPriority(r.priorityText ?? r.title),
     url: r.url ?? null,
+    eligibility,
     raw: r.raw ?? r,
   };
 }

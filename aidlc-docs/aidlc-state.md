@@ -50,25 +50,31 @@
 - [~] NFR Design — SKIP
 - [x] Infrastructure Design
 - [x] Code Generation (vitest 21 passed)
-**Unit U1 (Collection Pipeline)** — in progress
+**Unit U1 (Collection Pipeline)** — ✅ COMPLETE (+v2 criteria 보강)
 - [x] Functional Design — DONE
 - [~] NFR Requirements — SKIP
 - [~] NFR Design — SKIP
 - [x] Infrastructure Design — DONE
-- [x] Code Generation — DONE (vitest 43 passed total; awaiting approval)
+- [x] Code Generation — DONE (vitest 60 passed total incl. v2 criteria)
+**Unit U6 (Recommendation)** — in progress
+- [x] Functional Design — DONE (BR-U6-1~17)
+- [~] NFR Requirements — SKIP
+- [~] NFR Design — SKIP
+- [x] Infrastructure Design — DONE (recommendations 0005·RLS, recompute in collect, criteria TS config, /api/profile)
+- [ ] Code Generation
 **v2 추가 작업 (Change Request — 부부 추천)**
-- [ ] U2 migration 0004 — notices.eligibility(JSONB) + household_profile
-- [ ] U1 정규화 criteria 보강 + 수집 지역 서울·경기 한정
+- [x] U2 migration 0004 — notices.eligibility(JSONB) + household_profile (RLS, upsert RPC 재정의 / vitest 43 passed, tsc clean)
+- [x] U1 정규화 criteria 보강 + 수집 지역 서울·경기 한정 (criteria.ts CriteriaExtractor + isRegionInScope, normalize 연결, EligibilityCriteria 미러 / vitest 60 passed, tsc clean)
 - [ ] **Unit U6 (프로필·자격매칭·추천)** — Functional → Infra → Code
 **Units U3/U4/U5** — pending (추천 중심으로 설계 조정)
 - [ ] Build and Test — EXECUTE (after all units)
-**v2 잔여 순서**: 0004 → U1 보강 → U6 → U3 → U4 → U5 → Build&Test
+**v2 잔여 순서**: ~~0004~~ → ~~U1 보강~~ → **U6** → U3 → U4 → U5 → Build&Test
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: CHANGE REQUEST — Requirements revised (§12 v2). Awaiting approval to cascade: Stories revise → App Design (add matcher+profile) → Units (add U6 추천·매칭) → U2 migration 0004 → adjust U3/U4/U5. U2 ✅ + U1 ✅ code preserved.
-- **Next Stage**: U1 Infrastructure Design → U1 Code Generation → then U3
+- **Current Stage**: CONSTRUCTION (v2 cascade) — Unit U6 **Infrastructure Design DONE** (Q-IU6-1~4=A: recommendations 0005 anon-read/service-write + upsert/prune RPC, recompute in collect Edge Function, criteria-2026.ts config, /api/profile Route Handler). Awaiting approval → U6 Code Generation.
+- **Next Stage**: U6 Code Generation (matcher/scorer/criteria/service + 0005 migration + /api/profile + tests)
 - **Status**: In progress

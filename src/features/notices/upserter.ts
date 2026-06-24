@@ -37,6 +37,7 @@ export function toRpcRow(n: NoticeInput): Record<string, unknown> {
     priority: n.priority,
     url: n.url,
     eligibility_summary: n.eligibility_summary ?? null,
+    eligibility: n.eligibility ?? null,
     raw: n.raw ?? null,
   };
 }
