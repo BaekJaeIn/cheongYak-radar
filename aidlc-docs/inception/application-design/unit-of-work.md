@@ -32,6 +32,15 @@
 - **화면**: `/notice/[id]`
 - **Epic**: E4
 
+### U6 — 프로필·자격매칭·추천 (v2 추가, Recommendation Engine)
+- **책임**: 가구 프로필 저장, 공고 자격 판정, 추천 점수·정렬·사유. (FR-8~10, E6)
+- **컴포넌트**: C25 ProfileRepository, C26 EligibilityMatcher, C27 RecommendationEngine, C28 CriteriaExtractor(수집 보강), C29~C32(UI)
+- **서비스**: S6 RecommendationService
+- **데이터**: `household_profile`(단일행), `notices.eligibility`(JSONB, U2 마이그레이션 0004), 기준표 config 파일
+- **화면**: `/`(추천 피드), `/settings`(프로필), `/notice/[id]`(자격판정)
+- **Epic**: E6
+- **의존**: → U2(read notices/profile), ← U1(criteria 적재), → U5(신규 추천 push)
+
 ### U5 — 개인화·PWA·알림 (Personalization, PWA & Push)
 - **책임**: 북마크, 관심목록, PWA 설치/오프라인, Web Push 구독·발송.
 - **컴포넌트**: C10 BookmarkStore, C11 PushSubscriptionClient, C7 PushDispatcher, C21~C24
@@ -70,7 +79,8 @@ cheongYak-radar/
 └── next.config.js                 # U5: next-pwa
 ```
 
-## 개발 순서 (Q-U2=A 순차)
-**U2(데이터 스키마) → U1(수집, 목업 우선) → U3(탐색·필터) → U4(상세·AI) → U5(개인화·PWA·알림)**
-- U2를 먼저 만들어 모든 단위의 데이터 계약(타입·테이블)을 고정.
-- 이후 단위는 한 번에 하나씩. U3~U5는 U2의 목업/실데이터로 검증.
+## 개발 순서 (v2 갱신)
+**U2 ✅ → U1 ✅ → [v2] U2 마이그레이션 0004(eligibility+profile) → U1 criteria 보강 → U6(프로필·매칭·추천) → U3(추천 피드) → U4(상세·자격판정) → U5(개인화·PWA·Push)**
+- U2/U1은 완료(보존). v2는 additive: 0004 마이그레이션 + U1 정규화 보강 후 U6 신설.
+- U6를 U3/U4보다 먼저 만들어 추천 로직을 확정 → U3/U4 UI가 이를 표시.
+- 지역 범위는 전 단위 **서울·경기** (C-6).

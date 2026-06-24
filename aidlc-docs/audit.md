@@ -284,3 +284,60 @@
 **Context**: Created U1-collection-pipeline-code-generation-plan.md (Deno Edge Function under supabase/functions/collect + pure normalize/region-alias/mock testable via vitest + cron migration 0003). Awaiting plan approval before PART 2.
 
 ---
+
+## (Interleaved) Git Push to GitHub
+**Timestamp**: 2026-06-24T10:40:00Z
+**User Input**: "잠시 멈추고 일단 지금까지 진행한거 https://github.com/BaekJaeIn/cheongYak-radar.git 여기에 올려줘"
+**AI Response**: "git init + commit (87 files, no secrets/node_modules) + push to origin main. Verified local HEAD == origin/main (8c5a97d). .env.example only (placeholders), .env absent. Author: 백재인 <h.jiback@kalmate.net> (git config)."
+**Context**: User paused workflow to publish progress to GitHub; workflow position unchanged (U1 code-gen plan pending).
+
+---
+
+## U1 Code Generation PART 1 — Approved / PART 2 Started
+**Timestamp**: 2026-06-24T10:45:00Z
+**User Input**: "승인"
+**AI Response**: "U1 code-gen plan approved. Beginning PART 2 generation of Deno Edge Function under supabase/functions/collect (region-alias, normalize, types, mock, collectors x4, upsert, summarize, index), migration 0003_collect_cron.sql, vitest tests for pure modules, code summary."
+**Context**: CONSTRUCTION — U1 Code Generation PART 2 in progress.
+
+---
+
+## U1 Code Generation PART 2 — Completed
+**Timestamp**: 2026-06-24T11:05:00Z
+**User Input**: (continuation of "승인")
+**AI Response**: "Generated Deno Edge Function supabase/functions/collect/ (region-alias, normalize, types, mock[16], collectors x4, upsert, summarize, index) + migration 0003_collect_cron.sql + vitest tests (normalize 16, mock 6) + vitest.config include update + U1-code-summary.md. Fixed parseRegion bug (서울특별시 mis-parsed as sigu → strip sido first). Ran vitest: 43 passed total (U2 21 + U1 22). Marked all U1 code-gen steps [x], US-1.1~1.7 implemented. U1 unit fully complete. Next unit = U3."
+**Context**: CONSTRUCTION — U1 Code Generation complete; approval gate before unit U3."
+
+---
+
+## Change Request — Pivot to Couple-Specific Recommendation App
+**Timestamp**: 2026-06-24T11:20:00Z
+**Request**: "나와 여자친구만을 위한 전용 앱. 둘의 월급·거주지 등 순위 조건 정보를 모두 제공할 테니, 그에 맞는 청약공고가 나오면 추천. 범위는 서울·경기도만."
+**Current State**: CONSTRUCTION — U2 ✅, U1 ✅ (code+tests done). About to start U3.
+**Impact Assessment**:
+- Affects COMPLETED stage Requirements (core capability pivot): filter-tool → eligibility/ranking-based recommendation for a single household (2 users).
+- New: household profile model (둘의 소득/거주지/혼인/청약통장/무주택/자산/자녀 등) + EligibilityMatcher/RecommendationEngine. Region scope narrowed 서울·경기.
+- Downstream: User Stories revise, Application Design adds matcher+profile components, Units adds new unit (U6 추천·매칭) or extends U4.
+- Completed code impact = LOW/MODERATE (additive): U2 schema gets new migration for eligibility criteria + profile (not a rebuild); U1 normalization extended later; U3/U4/U5 not built yet → adjust their design before coding.
+- Recommended approach: MODIFY-FORWARD (re-open Requirements as revision, cascade), not destructive restart. U2/U1 code preserved.
+**User Confirmation**: (pending — questions file created)
+**Action Taken**: Created requirements-change-questions.md (approach confirm + recommendation prefs + household profile intake). Paused at gate.
+**Artifacts Affected (planned)**: requirements.md (revise), stories.md, application-design/*, unit-of-work*, new migration 0004, later U3/U4 design.
+
+---
+
+## Change Request — Answers Received, Requirements Revised
+**Timestamp**: 2026-06-24T11:35:00Z
+**User Input**: "완료" (A1=A modify-forward, A2=A eligibility+ranking, A3=A push, A4=A 관심지역 우선; 가구 프로필 작성 완료 — 상세 수치는 **로컬 전용 household-profile.md** 참조[공개 레포 제외]. 요지: 예비신혼·둘 다 무주택·생애최초·자녀없음, 희망 50~59㎡, 안양·군포·광명·서울 서남권)
+**AI Response**: "Analyzed answers. Created household-profile.md (structured + JSON snapshot + Open Items O-1~O-5). Revised requirements.md §12 (v2): region限 서울·경기(C-6), single household(C-7), profile-based(C-8); FR-8 profile mgmt, FR-9 eligibility matching(rules+config thresholds), FR-10 ranking/recommendation(+사유); screen changes(추천 피드/프로필/자격판정); additive code impact(U2 migration, U1 normalization, new unit U6, adjust U3/U4/U5); assumptions A-1~A-4. Presenting revised requirements for approval; downstream cascade plan outlined."
+**Status**: Requirements revised; awaiting approval
+**Context**: Change Request — Requirements revision complete; approval gate before cascading to Stories/Design/Units."
+
+---
+
+## Change Request — INCEPTION Cascade Revised (Stories/Design/Units)
+**Timestamp**: 2026-06-24T11:50:00Z
+**User Input**: "진생" (interpreted as 진행 / proceed)
+**AI Response**: "Cascaded v2 revision: stories.md +Epic E6 (US-6.1~6.7) + v2 개정 노트 (region 서울·경기, 목록→추천피드, settings→profile), total 31 stories/6 epics. components.md +C25~C32 + domain models (HouseholdProfile, EligibilityCriteria, MatchResult, Recommendation). services.md +S6 RecommendationService. unit-of-work.md +U6 + v2 dev order. story-map +U6(7) coverage 31. dependency +U6 deps. execution-plan + state +v2 order (0004 migration → U1 criteria → U6 → U3 → U4 → U5). U2/U1 code preserved. Presenting consolidated INCEPTION-revision approval before resuming construction."
+**Context**: Change Request — Stories/Design/Units revised; approval gate before construction (0004 migration → U1 → U6...)."
+
+---

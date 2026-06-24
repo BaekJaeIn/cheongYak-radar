@@ -47,6 +47,13 @@
 | S4 NotificationService | U5 | E5 |
 | S5 PwaService | U5 | E5 |
 
+## S6. RecommendationService (v2, 서버 우선) — U6
+- **책임**: 프로필 + 공고 → 자격판정 + 점수화 추천 피드 제공. (FR-9/10)
+- **흐름**: NoticeQueryService(서울·경기 공고) → EligibilityMatcher.evaluate(각 공고) → RecommendationEngine.rank → 추천 목록. 프로필은 ProfileRepository.
+- **메서드**: `getRecommendations(profile)`, `getMatchDetail(noticeId, profile)`
+- **연결**: C25, C26, C27 (+ C28는 U1 수집 시 criteria 적재)
+- **Push 연계**: 수집 후 신규 자격충족 공고 → U5 Push (US-6.7).
+
 ## 경계 원칙
 - **서버 전용**: 외부 API/크롤링, Claude, Push 발송, 키 사용 (S1, S2 read, S4 발송)
 - **클라이언트 전용**: 필터/북마크 localStorage, 구독 요청, 설치 (S3, S4 구독, S5)

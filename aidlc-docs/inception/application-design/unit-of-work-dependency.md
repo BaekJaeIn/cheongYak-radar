@@ -40,3 +40,11 @@ U2 (데이터 플랫폼)        ← 우선, 다른 모든 단위의 선행조건
 - 외부 API 스키마 불확실 → U1을 목업 모드로 먼저(US-1.7), 계약(Notice)으로 격리.
 - SH HTML 변동 → U1 내 격리(파싱 실패 skip).
 - Free tier → U2 인덱스로 쿼리 비용 최소화.
+
+## v2 추가 — U6 의존 (프로필·매칭·추천)
+- **U6 → U2**: `notices`(서울·경기) + `household_profile` 읽기.
+- **U6 ← U1**: U1이 `notices.eligibility`(JSONB criteria) 적재(C28) → U6 매칭 입력.
+- **U6 → U5**: 신규 자격충족 → Push (US-6.7).
+- **U3/U4 → U6**: 추천 피드/자격판정 표시 위해 RecommendationService 사용.
+- **순서(v2)**: 0004 마이그레이션(eligibility+profile) → U1 criteria 보강 → **U6** → U3 → U4 → U5.
+- 리스크: 자격조건 자동 추출 난이도 → 기준표(config)+Claude 보조, 미상값은 가정/보수적 판정.

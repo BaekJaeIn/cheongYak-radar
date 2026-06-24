@@ -13,37 +13,37 @@
 
 ## 생성 단계 (PART 2)
 
-### Step 1: 지역 별칭 + 정규화 (순수, 테스트 대상) — BR-2~5
-- [ ] `supabase/functions/collect/region-alias.ts` — 생활권명→행정구역 매핑 + `parseRegion`
-- [ ] `supabase/functions/collect/normalize.ts` — `parseArea`, `inferNewlywed`, `mapPriority`, `normalize(raw, source)`
+### Step 1: 지역 별칭 + 정규화 (순수, 테스트 대상) — BR-2~5  ✅
+- [x] `supabase/functions/collect/region-alias.ts` — 생활권명→행정구역 매핑 + `parseRegion`
+- [x] `supabase/functions/collect/normalize.ts` — `parseArea`, `inferNewlywed`, `mapPriority`, `normalize(raw, source)`
 
-### Step 2: 타입 + 목업 (순수) — US-1.7
-- [ ] `supabase/functions/collect/types.ts` — `Collector` 인터페이스, 공유 타입(Notice 미러)
-- [ ] `supabase/functions/collect/mock.ts` — MockDataProvider, 현실 세트 15~25건 (BR-7)
+### Step 2: 타입 + 목업 (순수) — US-1.7  ✅
+- [x] `supabase/functions/collect/types.ts` — `Collector` 인터페이스, 공유 타입(Notice 미러)
+- [x] `supabase/functions/collect/mock.ts` — MockDataProvider, 현실 세트 16건 (BR-7)
 
-### Step 3: 소스 Collector (Deno fetch / deno-dom) — US-1.2~1.5
-- [ ] `supabase/functions/collect/collectors/apply-home.ts` (apt)
-- [ ] `supabase/functions/collect/collectors/lh.ts` (lh)
-- [ ] `supabase/functions/collect/collectors/myhome-complex.ts` (보강)
-- [ ] `supabase/functions/collect/collectors/sh.ts` (deno-dom 파싱, 항목 skip)
+### Step 3: 소스 Collector (Deno fetch / deno-dom) — US-1.2~1.5  ✅
+- [x] `supabase/functions/collect/collectors/apply-home.ts` (apt)
+- [x] `supabase/functions/collect/collectors/lh.ts` (lh)
+- [x] `supabase/functions/collect/collectors/myhome-complex.ts` (보강)
+- [x] `supabase/functions/collect/collectors/sh.ts` (deno-dom 파싱, 항목 skip)
 
-### Step 4: 저장·요약 어댑터 — US-2.1 연계, BR-8
-- [ ] `supabase/functions/collect/upsert.ts` — `upsert_notices` RPC 호출(service_role)
-- [ ] `supabase/functions/collect/summarize.ts` — Anthropic 요약(상한 10), null 폴백
+### Step 4: 저장·요약 어댑터 — US-2.1 연계, BR-8  ✅
+- [x] `supabase/functions/collect/upsert.ts` — `upsert_notices` RPC 호출(service_role)
+- [x] `supabase/functions/collect/summarize.ts` — Anthropic 요약(상한 10), null 폴백
 
-### Step 5: 오케스트레이터 진입점 — US-1.1, US-1.6
-- [ ] `supabase/functions/collect/index.ts` — run(): 모드결정→allSettled 수집→upsert→요약→push 트리거→로깅
+### Step 5: 오케스트레이터 진입점 — US-1.1, US-1.6  ✅
+- [x] `supabase/functions/collect/index.ts` — run(): 모드결정→allSettled 수집→upsert→요약→push 트리거→로깅
 
-### Step 6: cron 마이그레이션 — US-1.1
-- [ ] `supabase/migrations/0003_collect_cron.sql` — pg_cron/pg_net enable + `collect-daily`(22:00 UTC)
+### Step 6: cron 마이그레이션 — US-1.1  ✅
+- [x] `supabase/migrations/0003_collect_cron.sql` — pg_cron/pg_net enable + `collect-daily`(22:00 UTC)
 
-### Step 7: 단위 테스트 (순수 모듈) — vitest
-- [ ] `vitest.config.ts` include에 `supabase/functions/**/*.test.ts` 추가
-- [ ] `supabase/functions/collect/__tests__/normalize.test.ts` — parseRegion/별칭, parseArea, inferNewlywed, mapPriority
-- [ ] `supabase/functions/collect/__tests__/mock.test.ts` — 목업 세트 불변식(소스 다양성·합성키·필드)
+### Step 7: 단위 테스트 (순수 모듈) — vitest  ✅ (22 passed)
+- [x] `vitest.config.ts` include에 `supabase/functions/**/*.test.ts` 추가
+- [x] `supabase/functions/collect/__tests__/normalize.test.ts` (16)
+- [x] `supabase/functions/collect/__tests__/mock.test.ts` (6)
 
-### Step 8: 문서/요약
-- [ ] `aidlc-docs/construction/U1-collection-pipeline/code/U1-code-summary.md`
+### Step 8: 문서/요약  ✅
+- [x] `aidlc-docs/construction/U1-collection-pipeline/code/U1-code-summary.md`
 
 ---
 

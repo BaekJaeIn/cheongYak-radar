@@ -106,3 +106,46 @@
 
 ### `NoticeFilter` (공유 타입)
 - regions: string[], areaMin?, areaMax?, sources: SourceType[], priorities: string[], newlyved?: boolean, preNewlywed?: boolean, hideExpired: boolean(기본 true)
+
+---
+
+## D. v2 추가 — 프로필 · 자격매칭 · 추천 (Unit U6)
+
+### C25. `ProfileRepository` / `ProfileStore` — U6
+- **목적**: 가구 프로필 1건 저장/조회. (FR-8)
+- **책임**: 프로필 CRUD. 저장 위치는 인프라 설계에서 확정(단일 가구·개인 보호: DB 단일행 + 비밀 또는 localStorage+서버 config).
+
+### C26. `EligibilityMatcher` — U6
+- **목적**: 공고 × 프로필 → 공급유형별 신청 가능 판정. (FR-9)
+- **책임**: 규칙 평가(무주택/소득비율/자산/통장순위/예비신혼/거주요건). 사유 산출. 기준표(config) 참조.
+- **인터페이스**: `evaluate(notice, profile, criteriaTable): MatchResult`
+
+### C27. `RecommendationEngine` — U6
+- **목적**: 자격 통과 공고 점수화·정렬. (FR-10)
+- **책임**: 가중 점수(순위·소득여유·거주가점·희망지역·면적·마감임박), 관심지역 가산(A4=A), 추천 사유 생성(Claude 재사용).
+- **인터페이스**: `rank(matches[], profile): Recommendation[]`
+
+### C28. `CriteriaExtractor` — U1 보강(소유는 U6)
+- **목적**: 공고 원문/필드 → 구조화 자격조건(EligibilityCriteria). (FR-9 입력)
+- **책임**: 베스트에포트 파싱 + Claude 보조. 결과는 notices.eligibility(JSONB)에 저장.
+
+### UI(v2)
+| ID | 컴포넌트 | 책임 | 스토리 |
+|---|---|---|---|
+| C29 | ProfileForm | 가구 프로필 입력/수정 | US-6.1 |
+| C30 | RecommendationFeed | 추천 점수순 피드 | US-6.5 |
+| C31 | EligibilityBadge | 공급유형별 자격(가능/불가+사유) | US-6.3 |
+| C32 | MatchReasonView | 추천/부적합 사유 | US-6.6 |
+
+## 공유 도메인 모델 (v2 추가)
+### `HouseholdProfile` — household-profile.md §10 스냅샷 구조
+maritalStatus, homeless, headOfHousehold, children, members, self/partner(birthYear, monthlyIncome, savingsAccount{type,count,amount}), assets{financial,carValue}, residence{sido,sigu,since}, firstTimeBuyer, preferences{areaMin,areaMax,regions[],sources[]}
+
+### `EligibilityCriteria` (notice별, JSONB)
+supplyTypes[], incomePctLimit?, assetLimit?, carLimit?, residencyReq?(지역/기간), savingsReq?(기간/횟수), preNewlywedAllowed?, firstTimeEligible?
+
+### `MatchResult`
+noticeId, perSupplyType: { type, eligible: boolean, reasons: string[] }[], anyEligible: boolean
+
+### `Recommendation`
+noticeId, score: number, eligibleTypes: string[], reasonSummary: string

@@ -55,15 +55,20 @@
 - [~] NFR Requirements — SKIP
 - [~] NFR Design — SKIP
 - [x] Infrastructure Design — DONE
-- [ ] Code Generation — Part 1 Planning (awaiting plan approval)
-**Units U3/U4/U5** — pending
+- [x] Code Generation — DONE (vitest 43 passed total; awaiting approval)
+**v2 추가 작업 (Change Request — 부부 추천)**
+- [ ] U2 migration 0004 — notices.eligibility(JSONB) + household_profile
+- [ ] U1 정규화 criteria 보강 + 수집 지역 서울·경기 한정
+- [ ] **Unit U6 (프로필·자격매칭·추천)** — Functional → Infra → Code
+**Units U3/U4/U5** — pending (추천 중심으로 설계 조정)
 - [ ] Build and Test — EXECUTE (after all units)
+**v2 잔여 순서**: 0004 → U1 보강 → U6 → U3 → U4 → U5 → Build&Test
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
 - **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: Unit U1 (Collection Pipeline) — Code Generation (Part 1 Planning)
+- **Current Stage**: CHANGE REQUEST — Requirements revised (§12 v2). Awaiting approval to cascade: Stories revise → App Design (add matcher+profile) → Units (add U6 추천·매칭) → U2 migration 0004 → adjust U3/U4/U5. U2 ✅ + U1 ✅ code preserved.
 - **Next Stage**: U1 Infrastructure Design → U1 Code Generation → then U3
 - **Status**: In progress
