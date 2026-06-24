@@ -1,5 +1,128 @@
 # AI-DLC Audit Log
 
+## Session Resume — U6 Code Generation
+**Timestamp**: 2026-06-25T00:10:00Z
+**User Input**: "어제 집에서 조금 작업했어. 작업한 내용 이어서 작업해줘"
+**AI Response**: "Loaded session-continuity. Surveyed yesterday's progress (commit 676a770, clean tree): U2 ✅, U1 ✅ (+v2 criteria 보강, vitest 60), migration 0004 (eligibility+household_profile), U6 Functional+Infrastructure Design DONE. Read U6 design (business-logic-model, domain-entities, business-rules BR-U6-1~17, infrastructure-design) + existing types (profile.ts, notice.ts EligibilityCriteria, criteria.ts extractor). Resume point = U6 Code Generation. Creating U6 code-generation plan (PART 1)."
+**Context**: Resume — CONSTRUCTION U6 Code Generation start.
+
+---
+
+## U6 Code Generation — PART 1 Approved, PART 2 Complete
+**Timestamp**: 2026-06-25T00:40:00Z
+**User Input**: "승인" (U6 code-gen plan)
+**AI Response**: "Generated U6 recommend engine (Deno/Node pure): types.ts, criteria-2026.ts, weights.ts, matcher.ts(evaluate BR-U6-1~8), scorer.ts(rank BR-U6-9~12), service.ts(recompute). Migration 0005_recommendations.sql (table+RLS anon-read/service-write + upsert_recommendations[firstRecommendedAt 보존] + prune_recommendations). Integrated collect/index.ts (recompute step + {action:recompute} branch + newIds→triggerPush). Node: src/features/profile/repository.ts + src/app/api/profile/route.ts (GET/PUT + recompute trigger). Tests matcher(8)+scorer(9). Ran vitest → 77 passed (60+17); tsc --noEmit clean. Marked plan [x], wrote U6-code-summary.md. U6 unit COMPLETE. Next unit = U3."
+**Context**: CONSTRUCTION — U6 complete; approval gate before unit U3."
+
+---
+
+## U6 Approved / U3 Functional Design Start
+**Timestamp**: 2026-06-25T00:55:00Z
+**User Input**: "진행"
+**AI Response**: "U6 approved. Starting Unit U3 (v2: 추천 피드 UI + 프로필 폼 + 배지/D-day). U3 stories US-3.1~3.6 + renders U6 UI (RecommendationFeed/ProfileForm). Creating U3 functional design plan (NFR skipped)."
+**Context**: CONSTRUCTION — U3 Functional Design start.
+
+---
+
+## U3 Functional Design Approved / Infrastructure Design Start
+**Timestamp**: 2026-06-25T01:10:00Z
+**User Input**: "완료"(Q-FU3-1~4=A) then "진행"
+**AI Response**: "Generated U3 frontend-components/business-rules/business-logic-model. Approved. Starting U3 Infrastructure Design (stack fixed Next.js/Vercel). Questions: caching strategy, infinite-scroll approach."
+**Context**: CONSTRUCTION — U3 Infrastructure Design start.
+
+---
+
+## U3 Infrastructure Design Approved / Code Generation PART 1
+**Timestamp**: 2026-06-25T01:25:00Z
+**User Input**: "추천대로"(Q-IU3-1/2=A) then "진행"
+**AI Response**: "Generated U3 infrastructure-design + deployment-architecture (no-store RSC, cursor 더보기, Tailwind). Approved. Creating U3 code-generation plan PART 1 (Tailwind setup + app layout/page/settings + feed components + recommendations repository + ProfileForm + tests)."
+**Context**: CONSTRUCTION — U3 Code Generation PART 1.
+
+---
+
+## U3 Code Generation — Approved & Complete
+**Timestamp**: 2026-06-25T01:55:00Z
+**User Input**: "진행" (approve U3 code-gen plan)
+**AI Response**: "Generated U3 UI: Tailwind setup(config/postcss/globals) + RootLayout, recommendations repository + pure feed-filter, feed components(badges/DdayBadge/dday/EligibilityBadge/MatchReason/RecommendationCard/RecommendationFeed/FeedFilterBar), pages /(feed RSC) + /settings, ProfileForm(client GET/PUT /api/profile), tests(feed-filter+dday). Installed tailwind devDeps. Verified: vitest 88 passed, tsc --noEmit clean, next build success (/ /settings /api/profile compile). Marked plan [x], wrote U3-code-summary.md. U3 COMPLETE. Next unit = U4."
+**Context**: CONSTRUCTION — U3 complete; approval gate before unit U4."
+
+---
+
+## U3 Approved / U4 Functional Design Start
+**Timestamp**: 2026-06-25T02:05:00Z
+**User Input**: "진행"
+**AI Response**: "U3 approved. Starting Unit U4 (상세 /notice/[id] + 자격판정 표시 + AI 요약). Stories US-4.1~4.4 + US-6.3 display. Creating U4 functional design plan."
+**Context**: CONSTRUCTION — U4 Functional Design start.
+
+---
+
+## U4 Functional Design — Answers / Artifacts
+**Timestamp**: 2026-06-25T02:15:00Z
+**User Input**: "추천대로" (Q-FU4-1=A stored recommendation+eligibility, Q-FU4-2=A stored eligibility_summary, Q-FU4-3=A show-available-only)
+**AI Response**: "No ambiguities. Generated U4 frontend-components(DetailPage/ScheduleTimeline/EligibilityDetail/AiSummary/SourceLink), business-rules(BR-U4-1~7), business-logic-model(getNoticeDetail = notice+recommendation+eligibility join). Next stage = Infrastructure Design."
+**Context**: U4 Functional Design — generating artifacts."
+
+---
+
+## U4 Functional Design Approved / Infrastructure Design Done
+**Timestamp**: 2026-06-25T02:25:00Z
+**User Input**: "진행"
+**AI Response**: "U4 functional design approved. Infrastructure Design: no new infra decisions (reuses U3 Vercel/Supabase, RSC no-store, anon read). Generated infrastructure-design + deployment-architecture (new dynamic route /notice/[id] + not-found, read-only anon). Next = U4 Code Generation."
+**Context**: CONSTRUCTION — U4 Infrastructure Design done; approval gate before Code Generation."
+
+---
+
+## U4 Code Generation — Approved & Complete
+**Timestamp**: 2026-06-25T02:45:00Z
+**User Input**: "진행" (approve U4 code-gen plan)
+**AI Response**: "Generated U4: getRecommendationFor + getNoticeDetail, pure timeline.ts + criteria-text.ts, detail components(DetailHeader/ScheduleTimeline/EligibilityDetail/AiSummary/AreaInfo/SourceLink), /notice/[id] page + not-found, tests(timeline+criteria-text). Fixed 1 test (formatWon 3.49→3.5억 rounding). Verified: vitest 94 passed, tsc clean, next build OK (/notice/[id] compiled). Marked plan [x], wrote U4-code-summary.md. U4 COMPLETE. Final unit = U5."
+**Context**: CONSTRUCTION — U4 complete; approval gate before final unit U5."
+
+---
+
+## U4 Approved / U5 Functional Design Start
+**Timestamp**: 2026-06-25T02:55:00Z
+**User Input**: "진행"
+**AI Response**: "U4 approved. Starting final Unit U5 (북마크 + PWA 설치/오프라인 + Web Push). Stories US-5.1~5.4 + US-6.7 push wiring. Creating U5 functional design plan."
+**Context**: CONSTRUCTION — U5 Functional Design start.
+
+---
+
+## U5 Functional Design — Answers / Artifacts
+**Timestamp**: 2026-06-25T03:05:00Z
+**User Input**: "완료" (Q-FU5-1=A localStorage bookmarks, Q-FU5-2=A subscribe+dispatch, Q-FU5-3=A next-pwa, Q-FU5-4=A dispatch in collect Edge Function)
+**AI Response**: "Generated U5 frontend-components(BookmarkButton/List, InstallPrompt, NotifyToggle), business-rules(BR-U5-1~10: localStorage bookmarks, PWA, push subscribe/dispatch/VAPID), business-logic-model(BookmarkStore, PushSubscriptionClient, PushDispatcher wired into collect triggerPush). Next = Infrastructure Design."
+**Context**: U5 Functional Design — generating artifacts."
+
+---
+
+## U5 Functional Design Approved / Infrastructure Design Done
+**Timestamp**: 2026-06-25T03:15:00Z
+**User Input**: "진행"
+**AI Response**: "U5 functional design approved. Infrastructure Design generated (next-pwa wrap + manifest/sw, web-push in collect Edge Function with VAPID, /api/subscribe for registration, push_subscriptions 0002 reuse, bookmarks via client anon supabase, VAPID env). No new migration. Next = U5 Code Generation (final)."
+**Context**: CONSTRUCTION — U5 Infrastructure Design done; approval gate before Code Generation."
+
+---
+
+## U5 Code Generation — Approved & Complete (ALL UNITS DONE)
+**Timestamp**: 2026-06-25T03:35:00Z
+**User Input**: "승인" (U5 code-gen plan)
+**AI Response**: "Generated U5: bookmarks(store+BookmarkButton+/bookmarks+browser client), push subscribe(push-client+NotifyToggle+/api/subscribe), push dispatch(collect/push.ts web-push + index triggerPush 실구현), PWA(manifest.json+sw.js manual+RegisterSW+InstallPrompt+layout), VAPID env, store tests. Decision deviation: manual PWA(manifest+sw.js) instead of next-pwa for build robustness (no extra deps, same功能). Fixed tsc(applicationServerKey BufferSource). Verified: vitest 99 passed, tsc clean, next build OK(/bookmarks,/api/subscribe). Marked plan [x], wrote U5-code-summary.md. ALL per-unit construction complete (U2·U1·U6·U3·U4·U5). Next = Build & Test."
+**Context**: CONSTRUCTION — all units complete; approval gate before Build & Test."
+
+---
+
+## Build and Test Stage
+**Timestamp**: 2026-06-25T03:50:00Z
+**User Input**: "진행"
+**Build Status**: Success (next build, 7 routes)
+**Test Status**: Pass (vitest 99/99, tsc clean)
+**Files Generated**: build-instructions.md, unit-test-instructions.md, integration-test-instructions.md, performance-test-instructions.md, build-and-test-summary.md
+**AI Response**: "Ran final verification: vitest 99 passed, tsc --noEmit clean, next build success(/ /bookmarks /notice/[id] /settings /api/profile /api/subscribe). Generated build-and-test instruction set + summary (integration scenarios S1-S6, perf N/A personal app, pre-deploy checklist). Marked Build & Test complete. INCEPTION+CONSTRUCTION fully complete; Operations is placeholder."
+**Context**: Build and Test complete — workflow done; Operations placeholder.
+
+---
+
 ## Workflow Start
 **Timestamp**: 2026-06-24T05:47:53Z
 **User Input**: "SPEC.md 기반으로 시작"
