@@ -2,7 +2,6 @@
 // 가구 프로필 입력 폼 (C29, US-6.1/6.2, Q-FU3-2=A 단일 폼).
 // GET/PUT /api/profile (서버 service_role). 민감정보는 API만 경유.
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { HouseholdProfile, MaritalStatus } from "@/lib/types/profile";
 import { ALL_SOURCES, SOURCE_LABEL, type SourceType } from "@/lib/types/notice";
@@ -322,13 +321,17 @@ export function ProfileForm() {
         </p>
       )}
       {saved && (
-        <Link
-          href="/"
+        <button
+          type="button"
+          onClick={() => {
+            router.refresh(); // 캐시된 추천 페이지 무효화 → 변경된 관심지역 즉시 반영
+            router.push("/");
+          }}
           className="rounded-lg border border-blue-200 bg-blue-50 py-2 text-center text-sm font-medium text-blue-700"
           data-testid="profile-goto-feed"
         >
           추천 보러가기 →
-        </Link>
+        </button>
       )}
     </form>
   );
