@@ -4,6 +4,7 @@ import { getRecommendationFeed } from "@/features/recommendations/repository";
 import { fromSearchParams } from "@/features/recommendations/feed-filter";
 import { RecommendationFeed } from "@/features/feed/RecommendationFeed";
 import { FeedFilterBar } from "@/features/feed/FeedFilterBar";
+import { InstallBanner } from "@/features/pwa/InstallBanner";
 import { todayKST } from "@/features/notices/query-builder";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SP }) {
 
   return (
     <section>
+      <InstallBanner />
       <h1 className="mb-1 text-base font-bold">우리 커플 맞춤 추천</h1>
       <p className="mb-3 text-xs text-gray-500">
         서울·경기 공고를 자격·순위로 추천해요. 결과가 비어 있으면{" "}

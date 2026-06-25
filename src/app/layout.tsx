@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { RegisterSW } from "@/features/pwa/RegisterSW";
-import { InstallPrompt } from "@/features/pwa/InstallPrompt";
 import { NotifyToggle } from "@/features/notifications/NotifyToggle";
 
 export const metadata: Metadata = {
@@ -28,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               청약레이더
             </Link>
             <div className="flex items-center gap-2">
-              <InstallPrompt />
               <NotifyToggle />
             </div>
           </div>
