@@ -36,15 +36,29 @@ interface RecomputeStatus {
   error?: string;
 }
 
+/** Supabase Functions 베이스 URL을 절대 URL로 정규화(프로토콜 보정·trailing slash 제거). */
+function functionsBaseUrl(): string | null {
+  // getAdminClient와 동일하게 NEXT_PUBLIC을 우선(배포 환경에서 검증된 값).
+  let url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  if (!url) return null;
+  url = url.trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(url)) url = `https://${url}`; // 프로토콜 누락 보정
+  try {
+    return new URL(url).origin; // 유효성 검증 + 경로/쿼리 제거
+  } catch {
+    return null;
+  }
+}
+
 /** collect Edge Function에 재계산만 요청(로직 중복 방지, infra §4). 결과/실패를 구조화 반환. */
 async function triggerRecompute(): Promise<RecomputeStatus> {
-  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const base = functionsBaseUrl();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    return { ok: false, error: "서버 환경변수(SUPABASE_URL/SERVICE_ROLE_KEY) 미설정 — 추천 갱신을 건너뜀" };
+  if (!base || !key) {
+    return { ok: false, error: "서버 환경변수(SUPABASE URL/SERVICE_ROLE_KEY) 미설정 — 추천 갱신을 건너뜀" };
   }
   try {
-    const res = await fetch(`${url}/functions/v1/collect`, {
+    const res = await fetch(`${base}/functions/v1/collect`, {
       method: "POST",
       headers: { "content-type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({ action: "recompute" }),
