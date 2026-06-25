@@ -20,6 +20,17 @@ export function pushSupported(): boolean {
   );
 }
 
+/**
+ * 서비스워커 등록 보장(idempotent). RegisterSW는 prod에서만 자동 등록하므로,
+ * 알림 구독 시점에 직접 등록해 dev/프로덕션 모두 동작하게 한다(없으면 ready가 멈춤).
+ */
+async function ensureServiceWorker(): Promise<ServiceWorkerRegistration> {
+  const existing = await navigator.serviceWorker.getRegistration();
+  const reg = existing ?? (await navigator.serviceWorker.register("/sw.js"));
+  await navigator.serviceWorker.ready; // active 상태까지 대기
+  return reg;
+}
+
 /** 권한 요청 + 구독 + 서버 등록. 성공 시 true. */
 export async function subscribe(): Promise<boolean> {
   if (!pushSupported()) return false;
@@ -29,7 +40,7 @@ export async function subscribe(): Promise<boolean> {
   const perm = await Notification.requestPermission();
   if (perm !== "granted") return false;
 
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await ensureServiceWorker();
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: urlBase64ToUint8Array(vapid) as BufferSource,
@@ -50,7 +61,8 @@ export async function subscribe(): Promise<boolean> {
 
 export async function unsubscribe(): Promise<void> {
   if (!pushSupported()) return;
-  const reg = await navigator.serviceWorker.ready;
+  const reg = await navigator.serviceWorker.getRegistration();
+  if (!reg) return;
   const sub = await reg.pushManager.getSubscription();
   await sub?.unsubscribe();
 }
