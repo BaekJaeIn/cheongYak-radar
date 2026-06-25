@@ -9,7 +9,7 @@
 
 ## 환경 변수 (.env.example 참고)
 - 공개: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`
-- 서버 전용: `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `VAPID_PRIVATE_KEY`, `DATA_GO_KR_API_KEY`, `COLLECT_MODE`(mock|live)
+- 서버 전용: `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `VAPID_PRIVATE_KEY`, `DATA_GO_KR_API_KEY`, `COLLECT_MODE`(mock|live)
 
 ## Build Steps
 ### 1. 의존성 설치
@@ -38,7 +38,7 @@ supabase db reset  # 0001~0005 + seed 적용
 ```bash
 supabase functions serve collect      # 로컬
 # 또는 배포: supabase functions deploy collect
-supabase secrets set SUPABASE_SERVICE_ROLE_KEY=... ANTHROPIC_API_KEY=... VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... COLLECT_MODE=mock
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY=... GEMINI_API_KEY=... VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... COLLECT_MODE=mock
 ```
 
 ## Verify Build Success

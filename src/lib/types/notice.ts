@@ -24,7 +24,7 @@ export interface Notice {
   pre_newlywed: boolean;
   priority: Priority | null;
   url: string | null;
-  eligibility_summary: string | null; // Claude 요약 캐시 (U4)
+  eligibility_summary: string | null; // AI 요약 캐시 (U4, Gemini)
   eligibility: EligibilityCriteria | null; // 구조화 자격조건 (v2, U1 CriteriaExtractor 적재)
   raw: unknown;
   created_at: string; // timestamptz

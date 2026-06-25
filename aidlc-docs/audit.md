@@ -123,6 +123,14 @@
 
 ---
 
+## Change — AI 요약 제공자 변경 (Claude → Gemini)
+**Timestamp**: 2026-06-25T09:50:00Z
+**User Input**: "요약을 제미나이로 변경해줘"
+**AI Response**: "자격조건 AI 요약(US-4.3, U1 summarize.ts)을 Anthropic Claude → Google Gemini로 전환. summarize.ts: 호출을 generativelanguage API(generateContent, x-goog-api-key)로 교체, 모델 gemini-2.0-flash(GEMINI_MODEL 오버라이드), 키 GEMINI_API_KEY. .env.example: ANTHROPIC_API_KEY → GEMINI_API_KEY(+aistudio 발급 안내). notice.ts 주석, 운영 문서(build-instructions, U1/U6 infrastructure-design, U1 deployment-architecture)의 시크릿/제공자 표기 갱신. 설계 의사결정 이력 문서(requirements/stories/components 등)는 당시 결정 기록으로 보존. 검증: vitest 99 passed, tsc clean, 코드 내 ANTHROPIC 참조 0."
+**Context**: Provider change for eligibility summary — code + env + operational docs updated; key sk-cost-free tier available via Google AI Studio.
+
+---
+
 ## Workflow Start
 **Timestamp**: 2026-06-24T05:47:53Z
 **User Input**: "SPEC.md 기반으로 시작"

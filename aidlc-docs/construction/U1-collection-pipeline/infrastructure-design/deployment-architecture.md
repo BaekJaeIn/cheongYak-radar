@@ -20,7 +20,7 @@
 
 ## 2. 배포
 - `supabase functions deploy collect` (Edge Function 배포).
-- Edge secrets 설정: `supabase secrets set SUPABASE_SERVICE_ROLE_KEY=... DATA_GO_KR_API_KEY=... ANTHROPIC_API_KEY=... COLLECT_MODE=mock`.
+- Edge secrets 설정: `supabase secrets set SUPABASE_SERVICE_ROLE_KEY=... DATA_GO_KR_API_KEY=... GEMINI_API_KEY=... COLLECT_MODE=mock`.
 - cron/확장 마이그레이션: `supabase/migrations/0003_collect_cron.sql` (pg_cron, pg_net enable + schedule).
 
 ## 3. 환경/모드

@@ -71,7 +71,7 @@ collectAll → upsertNotices → summarizeMissing
 | 시크릿 | 용도 | 비고 |
 |---|---|---|
 | SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY | Edge·Next 서버 DB 접근 | 기존 |
-| ANTHROPIC_API_KEY | 추천 사유 Claude 보강(선택, BR-U6-12) | U1 summarize와 공유, 상한·비차단 동일 패턴 |
+| GEMINI_API_KEY | 추천 사유 Gemini 보강(선택, BR-U6-12) | U1 summarize와 공유, 상한·비차단 동일 패턴 |
 
 ---
 

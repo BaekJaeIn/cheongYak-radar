@@ -1,9 +1,9 @@
-// 자격조건 Claude 요약 (U4 사양, U1에서 실행). BR-8: summary 없는 공고만, 1회 상한.
-// 키는 서버 전용(NFR-3). 모델: claude-opus-4-8.
+// 자격조건 AI 요약 (U4 사양, U1에서 실행). BR-8: summary 없는 공고만, 1회 상한.
+// 키는 서버 전용(NFR-3). 제공자: Google Gemini API (gemini-2.0-flash).
 
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
-const MODEL = "claude-opus-4-8";
+const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.0-flash";
 const DEFAULT_LIMIT = 10; // Q-IU3=A
 
 interface NoticeRow {
@@ -18,9 +18,9 @@ export async function summarizeMissing(
   client: SupabaseClient,
   limit = DEFAULT_LIMIT,
 ): Promise<{ summarized: number }> {
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  const apiKey = Deno.env.get("GEMINI_API_KEY");
   if (!apiKey) {
-    console.warn("ANTHROPIC_API_KEY 미설정 — 요약 건너뜀");
+    console.warn("GEMINI_API_KEY 미설정 — 요약 건너뜀");
     return { summarized: 0 };
   }
 
@@ -59,21 +59,20 @@ async function summarizeOne(apiKey: string, row: NoticeRow): Promise<string | nu
     `3~5줄로 쉽게 요약해줘. 신혼부부/예비신혼/소득·자산 기준/거주지 요건이 있으면 명시.\n\n` +
     `제목: ${row.title}\n공급유형: ${row.supply_type ?? "미상"}\n원본: ${source.slice(0, 4000)}`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
+      "x-goog-api-key": apiKey,
     },
     body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 400,
-      messages: [{ role: "user", content: prompt }],
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 400, temperature: 0.4 },
     }),
   });
-  if (!res.ok) throw new Error(`Anthropic ${res.status}`);
+  if (!res.ok) throw new Error(`Gemini ${res.status}`);
   const json = await res.json();
-  const text = json?.content?.[0]?.text;
+  const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
   return typeof text === "string" && text.trim().length > 0 ? text.trim() : null;
 }

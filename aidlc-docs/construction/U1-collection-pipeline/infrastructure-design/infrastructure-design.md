@@ -55,7 +55,7 @@ select cron.schedule(
 ## 4. 외부 호출
 - **data.go.kr API**: HTTPS GET, `DATA_GO_KR_API_KEY` 쿼리/헤더. live 모드에서만.
 - **SH 크롤링**: 목록 페이지 fetch → `deno-dom`으로 셀렉터 파싱(셀렉터는 sh.ts 상수). 항목 실패 skip(BR-6.3).
-- **Anthropic**: `@anthropic-ai/sdk` (npm:) 또는 fetch, `ANTHROPIC_API_KEY`, 모델 `claude-opus-4-8`.
+- **Gemini**: REST fetch(generativelanguage API), `GEMINI_API_KEY`, 모델 `gemini-2.0-flash`.
 
 ## 5. 시크릿 (NFR-3) — Edge Function secrets
 | 키 | 용도 |
@@ -63,7 +63,7 @@ select cron.schedule(
 | `SUPABASE_SERVICE_ROLE_KEY` | upsert_notices RPC |
 | `SUPABASE_URL` | RPC 엔드포인트 |
 | `DATA_GO_KR_API_KEY` | 공공 API(live) |
-| `ANTHROPIC_API_KEY` | 요약 |
+| `GEMINI_API_KEY` | 요약 |
 | `COLLECT_MODE` | mock/live 토글 |
 > 모두 서버(Edge) 전용. 클라이언트 노출 금지.
 
