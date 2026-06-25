@@ -42,11 +42,15 @@ function isMockMode(): boolean {
 }
 
 function liveCollectors(): Collector[] {
+  // 검증 완료: ApplyHome(청약홈 15098547).
+  // LH(15088707 파일데이터): LH_FILEDATA_URL 설정 시 적재, 없으면 안전 skip.
+  // MyhomeComplex(15110581): 엔드포인트 미확정 → 빈 결과로 비차단.
+  // SH(크롤러): 셀렉터 검증 후 재활성.
   return [
     new ApplyHomeCollector(),
     new LhCollector(),
     new MyhomeComplexCollector(),
-    new ShCollector(),
+    // new ShCollector(),
   ];
 }
 

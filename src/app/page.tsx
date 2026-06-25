@@ -29,7 +29,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SP }) {
 
   return (
     <section>
-      <h1 className="mb-1 text-base font-bold">우리 부부 맞춤 추천</h1>
+      <h1 className="mb-1 text-base font-bold">우리 커플 맞춤 추천</h1>
       <p className="mb-3 text-xs text-gray-500">
         서울·경기 공고를 자격·순위로 추천해요. 결과가 비어 있으면{" "}
         <Link href="/settings" className="text-blue-700 underline">

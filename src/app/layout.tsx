@@ -6,7 +6,7 @@ import { InstallPrompt } from "@/features/pwa/InstallPrompt";
 import { NotifyToggle } from "@/features/notifications/NotifyToggle";
 
 export const metadata: Metadata = {
-  title: "청약레이더 — 우리 부부 맞춤 추천",
+  title: "청약레이더 — 우리 커플 맞춤 추천",
   description: "서울·경기 청약/임대 공고를 우리 자격·순위로 자동 추천",
   manifest: "/manifest.json",
 };
