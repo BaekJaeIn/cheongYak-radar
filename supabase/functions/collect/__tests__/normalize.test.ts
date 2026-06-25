@@ -15,6 +15,25 @@ describe("parseRegion (BR-2)", () => {
   it("빈 값은 null/null", () => {
     expect(parseRegion(null)).toEqual({ sido: null, sigu: null });
   });
+
+  // v2: LH 공고 패턴 — 주소는 "경기도"만 오고 도시는 제목 앞에 접미사 없이 붙음.
+  it("택지지구 별칭으로 시군구 추출(분당→성남시, 옥정→양주시, 동탄→화성시)", () => {
+    expect(parseRegion("경기도 분당하얀6단지 50년공공임대")).toEqual({ sido: "경기", sigu: "성남시" });
+    expect(parseRegion("경기도 양주옥정 10년 공공임대주택")).toEqual({ sido: "경기", sigu: "양주시" });
+    expect(parseRegion("경기도 화성동탄2 C-27블록 공공분양")).toEqual({ sido: "경기", sigu: "화성시" });
+  });
+  it("접미사 없는 도시명 인식(이천부발→이천시, 김포한강→김포시, 용인김량장→용인시)", () => {
+    expect(parseRegion("경기도 이천부발 국민임대주택")).toMatchObject({ sigu: "이천시" });
+    expect(parseRegion("경기도 김포한강 Ac-01a블록")).toMatchObject({ sigu: "김포시" });
+    expect(parseRegion("경기도 용인김량장2단지")).toMatchObject({ sigu: "용인시" });
+  });
+  it("서울 자치구 보정(서울금천→금천구, 서울오류→구로구)", () => {
+    expect(parseRegion("서울특별시 서울금천 행복주택")).toEqual({ sido: "서울", sigu: "금천구" });
+    expect(parseRegion("서울특별시 서울오류 행복주택")).toEqual({ sido: "서울", sigu: "구로구" });
+  });
+  it("도시 정보가 전혀 없으면 시군구 null(시도만)", () => {
+    expect(parseRegion("경기도 [경기북부] 26년 1차 든든전세주택")).toMatchObject({ sido: "경기", sigu: null });
+  });
 });
 
 describe("parseArea (BR-3)", () => {
