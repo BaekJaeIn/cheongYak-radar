@@ -8,12 +8,15 @@ export function deriveStatus(reasonSummary: string | null): "eligible" | "condit
 export function EligibilityBadge({ reasonSummary }: { reasonSummary: string | null }) {
   const status = deriveStatus(reasonSummary);
   const map = {
-    eligible: { label: "신청가능", cls: "bg-green-100 text-green-800" },
-    conditional: { label: "확인필요", cls: "bg-amber-100 text-amber-800" },
+    eligible: { label: "신청가능", cls: "bg-emerald-50 text-emerald-700" },
+    conditional: { label: "확인필요", cls: "bg-amber-50 text-amber-700" },
   } as const;
   const { label, cls } = map[status];
   return (
-    <span className={`rounded px-1.5 py-0.5 text-xs font-semibold ${cls}`} data-testid="elig-badge">
+    <span
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}
+      data-testid="elig-badge"
+    >
       {label}
     </span>
   );

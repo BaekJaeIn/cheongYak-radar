@@ -2,6 +2,8 @@
 // 가구 프로필 입력 폼 (C29, US-6.1/6.2, Q-FU3-2=A 단일 폼).
 // GET/PUT /api/profile (서버 service_role). 민감정보는 API만 경유.
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { HouseholdProfile, MaritalStatus } from "@/lib/types/profile";
 import { ALL_SOURCES, SOURCE_LABEL, type SourceType } from "@/lib/types/notice";
 
@@ -16,6 +18,7 @@ function emptyProfile(): HouseholdProfile {
     partner: { birthYear: 0, monthlyIncome: 0 },
     assets: { financial: 0, carValue: 0 },
     residence: { sido: "", sigu: "", since: "" },
+    partnerResidence: { sido: "", sigu: "", since: "" },
     firstTimeBuyer: true,
     preferences: { regions: [], sources: [...ALL_SOURCES] },
   };
@@ -31,10 +34,12 @@ const MARITAL: { v: MaritalStatus; label: string }[] = [
 type Status = "idle" | "loading" | "saving" | "saved" | "error";
 
 export function ProfileForm() {
+  const router = useRouter();
   const [p, setP] = useState<HouseholdProfile>(emptyProfile());
   const [regionsText, setRegionsText] = useState("");
   const [status, setStatus] = useState<Status>("loading");
   const [message, setMessage] = useState("");
+  const [saved, setSaved] = useState(false); // 저장 성공 시 '추천 보러가기' 노출
 
   useEffect(() => {
     fetch("/api/profile")
@@ -58,6 +63,7 @@ export function ProfileForm() {
     e.preventDefault();
     setStatus("saving");
     setMessage("");
+    setSaved(false);
     const profile: HouseholdProfile = {
       ...p,
       preferences: {
@@ -71,13 +77,40 @@ export function ProfileForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(profile),
       });
-      if (!res.ok) throw new Error((await res.json())?.error ?? "저장 실패");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error ?? "저장 실패");
+
+      const rec = data?.recompute as
+        | { ok: boolean; recommended?: number; error?: string }
+        | undefined;
       setStatus("saved");
-      setMessage("저장됐어요. 추천을 갱신하는 중입니다.");
+      setSaved(true);
+      if (rec && rec.ok) {
+        setMessage(
+          rec.recommended != null
+            ? `저장 완료! 추천 ${rec.recommended}건을 새로 계산했어요.`
+            : "저장 완료! 추천을 갱신했어요.",
+        );
+      } else if (rec && !rec.ok) {
+        // 저장은 됐지만 추천 갱신이 안 된 경우 — 원인을 그대로 노출(과거엔 조용히 실패)
+        setMessage(`저장은 됐지만 추천 갱신은 실패했어요: ${rec.error ?? "알 수 없는 오류"}`);
+      } else {
+        setMessage("저장 완료!");
+      }
+      // 피드(서버 컴포넌트) 데이터 재요청 — 다음 이동 시 최신 추천 반영
+      router.refresh();
     } catch (err) {
       setStatus("error");
       setMessage((err as Error).message);
     }
+  }
+
+  const partnerRes = p.partnerResidence ?? { sido: "", sigu: "", since: "" };
+  function setPartnerRes(patch: Partial<{ sido: string; sigu: string; since: string }>) {
+    setP((cur) => ({
+      ...cur,
+      partnerResidence: { ...(cur.partnerResidence ?? { sido: "", sigu: "", since: "" }), ...patch },
+    }));
   }
 
   function toggleSource(s: SourceType) {
@@ -202,9 +235,9 @@ export function ProfileForm() {
         </div>
       </div>
 
-      {/* 거주 */}
+      {/* 거주 — 본인 */}
       <div className={section}>
-        <h2 className="mb-2 text-sm font-semibold">거주지</h2>
+        <h2 className="mb-2 text-sm font-semibold">본인 거주지</h2>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={label}>시도</label>
@@ -221,6 +254,30 @@ export function ProfileForm() {
         <input type="date" className={field} value={p.residence.since}
           onChange={(e) => setP({ ...p, residence: { ...p.residence, since: e.target.value } })}
           data-testid="profile-since" />
+      </div>
+
+      {/* 거주 — 여자친구(배우자) */}
+      <div className={section}>
+        <h2 className="mb-1 text-sm font-semibold">여자친구 거주지</h2>
+        <p className="mb-2 text-xs text-gray-500">해당지역 우선공급 판정에 본인 거주지와 함께 반영돼요.</p>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className={label}>시도</label>
+            <input className={field} value={partnerRes.sido} placeholder="서울"
+              onChange={(e) => setPartnerRes({ sido: e.target.value })}
+              data-testid="profile-partner-sido" />
+          </div>
+          <div>
+            <label className={label}>시군구</label>
+            <input className={field} value={partnerRes.sigu} placeholder="강서구"
+              onChange={(e) => setPartnerRes({ sigu: e.target.value })}
+              data-testid="profile-partner-sigu" />
+          </div>
+        </div>
+        <label className={label}>전입일</label>
+        <input type="date" className={field} value={partnerRes.since}
+          onChange={(e) => setPartnerRes({ since: e.target.value })}
+          data-testid="profile-partner-since" />
       </div>
 
       {/* 희망조건 */}
@@ -263,6 +320,15 @@ export function ProfileForm() {
         <p className={`text-center text-xs ${status === "error" ? "text-red-600" : "text-green-700"}`} data-testid="profile-message">
           {message}
         </p>
+      )}
+      {saved && (
+        <Link
+          href="/"
+          className="rounded-lg border border-blue-200 bg-blue-50 py-2 text-center text-sm font-medium text-blue-700"
+          data-testid="profile-goto-feed"
+        >
+          추천 보러가기 →
+        </Link>
       )}
     </form>
   );

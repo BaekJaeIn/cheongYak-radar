@@ -1,6 +1,6 @@
 import type { Notice } from "@/lib/types/notice";
 import type { FeedRec } from "@/features/recommendations/types";
-import { ProviderBadge, KindBadge, NewlywedTag } from "@/features/feed/badges";
+import { ProviderBadge, KindBadge, NewlywedTag, ScoreBadge } from "@/features/feed/badges";
 import { DdayBadge } from "@/features/feed/DdayBadge";
 import { EligibilityBadge } from "@/features/feed/EligibilityBadge";
 
@@ -22,11 +22,7 @@ export function DetailHeader({
         {rec && <EligibilityBadge reasonSummary={rec.reasonSummary} />}
         <span className="ml-auto flex items-center gap-1">
           <DdayBadge applyEnd={notice.apply_end} today={today} />
-          {rec && (
-            <span className="rounded bg-blue-600 px-1.5 py-0.5 text-xs font-bold text-white">
-              {Math.round(rec.score)}점
-            </span>
-          )}
+          {rec && <ScoreBadge score={rec.score} />}
         </span>
       </div>
       <h1 className="text-lg font-bold leading-snug">{notice.title}</h1>

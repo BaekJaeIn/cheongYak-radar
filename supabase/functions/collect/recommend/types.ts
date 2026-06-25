@@ -20,6 +20,11 @@ export interface ProfilePreferences {
   regions: string[];
   sources: string[];
 }
+export interface Residence {
+  sido: string;
+  sigu: string;
+  since: string;
+}
 export interface HouseholdProfile {
   maritalStatus: MaritalStatus;
   homeless: boolean;
@@ -29,7 +34,8 @@ export interface HouseholdProfile {
   self: Member;
   partner: Member;
   assets: { financial: number; carValue: number };
-  residence: { sido: string; sigu: string; since: string };
+  residence: Residence; // 본인 거주지
+  partnerResidence?: Residence; // 여자친구(배우자) 거주지 — 우선공급 판정에 함께 사용
   firstTimeBuyer: boolean;
   preferences: ProfilePreferences;
 }

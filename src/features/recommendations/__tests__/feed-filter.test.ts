@@ -5,6 +5,7 @@ import {
   kindToSources,
   matchesKind,
   passesFilter,
+  passesRegion,
   defaultFeedFilter,
 } from "@/features/recommendations/feed-filter";
 import type { Notice } from "@/lib/types/notice";
@@ -60,5 +61,31 @@ describe("matchesKind / passesFilter", () => {
     const n = notice({ source: "lh", apply_end: "2026-12-31" });
     expect(passesFilter(n, { kind: "rent", hideExpired: true }, "2026-06-25")).toBe(true);
     expect(passesFilter(n, { kind: "sale", hideExpired: true }, "2026-06-25")).toBe(false);
+  });
+});
+
+describe("passesRegion (v2 관심지역 필터)", () => {
+  const REGIONS = ["안양시", "산본", "평촌", "광명시"];
+  it("관심 시군구·별칭(산본→군포시) 일치 → 포함", () => {
+    expect(passesRegion(notice({ region_sigu: "안양시" }), REGIONS)).toBe(true);
+    expect(passesRegion(notice({ region_sigu: "군포시" }), REGIONS)).toBe(true);
+    expect(passesRegion(notice({ region_sigu: "광명시" }), REGIONS)).toBe(true);
+  });
+  it("먼 경기(이천·양주·화성)는 제외", () => {
+    expect(passesRegion(notice({ region_sigu: "이천시" }), REGIONS)).toBe(false);
+    expect(passesRegion(notice({ region_sigu: "양주시" }), REGIONS)).toBe(false);
+    expect(passesRegion(notice({ region_sigu: "화성시" }), REGIONS)).toBe(false);
+  });
+  it("시군구 미상(경기 표기만)·서울은 유지", () => {
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null }), REGIONS)).toBe(true);
+    expect(passesRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), REGIONS)).toBe(true);
+  });
+  it("관심지역 미설정이면 전체 허용", () => {
+    expect(passesRegion(notice({ region_sigu: "이천시" }), [])).toBe(true);
+    expect(passesRegion(notice({ region_sigu: "이천시" }), undefined)).toBe(true);
+  });
+  it("passesFilter에 regions 결합 — 먼 경기 제외", () => {
+    expect(passesFilter(notice({ region_sigu: "이천시" }), { hideExpired: true, regions: REGIONS }, "2026-06-25")).toBe(false);
+    expect(passesFilter(notice({ region_sigu: "안양시" }), { hideExpired: true, regions: REGIONS }, "2026-06-25")).toBe(true);
   });
 });

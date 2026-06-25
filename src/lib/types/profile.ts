@@ -20,6 +20,13 @@ export interface Member {
   savingsAccount?: SavingsAccount;
 }
 
+/** 거주지(시도/시군구/전입일). 해당지역 우선공급 거주기간 판정용. */
+export interface Residence {
+  sido: string;
+  sigu: string;
+  since: string; // 전입일 YYYY-MM-DD
+}
+
 /** 추천/표시 희망 조건. */
 export interface ProfilePreferences {
   areaMin?: number; // 희망 전용면적 하한(㎡)
@@ -44,11 +51,8 @@ export interface HouseholdProfile {
     financial: number; // 금융자산(원)
     carValue: number; // 자동차가액(원)
   };
-  residence: {
-    sido: string;
-    sigu: string;
-    since: string; // 전입일 YYYY-MM-DD
-  };
+  residence: Residence; // 본인 거주지
+  partnerResidence?: Residence; // 여자친구(배우자) 거주지 — 해당지역 우선공급 판정에 함께 사용
   firstTimeBuyer: boolean; // 생애최초 대상 여부
   preferences: ProfilePreferences;
 }

@@ -102,4 +102,33 @@ describe("evaluate (BR-U6-1~8)", () => {
     const r = evaluate(n, profile, CRITERIA_2026, TODAY);
     expect(r.anyEligible).toBe(true);
   });
+
+  it("청년(1인 대상) 유형은 부부 가구(2인) 비해당 → ineligible (v2)", () => {
+    const n = notice({ eligibility: { supplyTypes: ["청년"] }, area_min: 18, area_max: 24 });
+    const r = evaluate(n, profile, CRITERIA_2026, TODAY);
+    expect(r.anyEligible).toBe(false);
+    expect(r.perSupplyType[0].status).toBe("ineligible");
+    expect(r.perSupplyType[0].reasons.join()).toMatch(/부부 가구 비해당/);
+  });
+
+  it("여자친구 거주지가 요건 지역·기간 충족 시 거주요건 충족 사유 (v2)", () => {
+    const n = notice({
+      eligibility: { supplyTypes: ["신혼희망타운"], residencyReq: { region: "경기", months: 12 } },
+    });
+    // 본인은 부천 전입 최근(미충족)이지만, 여자친구가 경기 오래 거주 → 충족
+    const withPartner = {
+      ...profile,
+      partnerResidence: { sido: "경기", sigu: "안양시", since: "2020-01-01" },
+    };
+    const r = evaluate(n, withPartner, CRITERIA_2026, TODAY);
+    expect(r.perSupplyType[0].reasons.join()).toMatch(/거주요건 충족/);
+  });
+
+  it("두 거주지 모두 요건 지역 미해당 시 거주기간 미충족 사유 (v2)", () => {
+    const n = notice({
+      eligibility: { supplyTypes: ["신혼희망타운"], residencyReq: { region: "서울", months: 12 } },
+    });
+    const r = evaluate(n, profile, CRITERIA_2026, TODAY); // 본인 경기 부천, 여친 없음 → 서울 미해당
+    expect(r.perSupplyType[0].reasons.join()).toMatch(/거주기간 미충족/);
+  });
 });

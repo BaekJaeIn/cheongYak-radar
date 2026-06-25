@@ -40,6 +40,40 @@ export function regionScore(notice: NoticeInput, p: HouseholdProfile): number {
   return 0.2; // 서울·경기 내(수집 범위) 기본
 }
 
+/**
+ * 관심지역 필터 (v2). "관심지역만 남기기"가 아니라 "먼 경기 도시만 제외".
+ * - 관심지역 미설정 → true(필터 없음)
+ * - 시군구 미상 → true(데이터 미비 시 비우지 않음)
+ * - 서울(인접 metro) → true
+ * - 관심 시군구 일치(별칭·부분일치) → true
+ * - 그 외(이천·양주·화성 등 관심지역 밖 경기) → false (추천 제외)
+ *
+ * 기존 regionScore의 '같은 시도(경기) 전체 0.5점' 노출 정책을 시군구 기준으로 좁힘.
+ */
+export function isPreferredRegion(notice: NoticeInput, p: HouseholdProfile): boolean {
+  const regions = p.preferences.regions ?? [];
+  if (regions.length === 0) return true; // 관심지역 미설정 → 전체 허용
+  const sigu = notice.region_sigu;
+  if (!sigu) return true; // 지역 미상 → 유지
+  if (notice.region_sido === "서울") return true; // 서울은 인접 권역으로 유지
+  const prefsSigu = regions.map((r) => REGION_ALIAS[r] ?? r);
+  if (prefsSigu.some((pr) => pr === sigu || sigu.includes(pr) || pr.includes(sigu))) return true;
+  return false; // 관심지역 밖 경기 도시 → 제외
+}
+
+/**
+ * 부부 신혼집으로 부적합한 '너무 작은 평형'인지 (v2, 원룸/청년매입임대 등 제외).
+ * 희망 전용면적 하한(areaMin)이 있고, 공고 최대 전용면적이 그보다 작으면 제외.
+ * 면적 미상이면 베스트에포트로 유지(false).
+ */
+export function tooSmallForCouple(notice: NoticeInput, p: HouseholdProfile): boolean {
+  const min = p.preferences.areaMin;
+  if (min == null || min <= 0) return false;
+  const nMax = notice.area_max ?? notice.area_min;
+  if (nMax == null) return false;
+  return nMax < min;
+}
+
 /** 면적 적합도 [0..1]. */
 export function areaScore(notice: NoticeInput, p: HouseholdProfile): number {
   const { areaMin, areaMax } = p.preferences;
@@ -120,6 +154,8 @@ export function rank(
     if (!notice) continue;
     const d = daysUntil(notice.apply_end, today);
     if (d != null && d < 0) continue; // 마감 제외
+    if (!isPreferredRegion(notice, profile)) continue; // v2: 관심지역 외(먼 경기) 제외
+    if (tooSmallForCouple(notice, profile)) continue; // v2: 원룸 등 너무 작은 평형 제외
 
     const status = bestStatus(m);
     const breakdown: Record<string, number> = {

@@ -5,6 +5,34 @@ import type { FeedFilter, FeedKind } from "./types";
 const SALE_SOURCES: SourceType[] = ["apt"];
 const RENT_SOURCES: SourceType[] = ["lh", "sh", "private"];
 
+// 생활권 별칭(평촌→안양시 등) — 수집 단계 region-alias와 동기화.
+const REGION_ALIAS: Record<string, string> = {
+  평촌: "안양시",
+  인덕원: "안양시",
+  산본: "군포시",
+  백운밸리: "의왕시",
+  포일: "의왕시",
+  과천지식정보타운: "과천시",
+};
+
+/**
+ * 관심지역 필터 (v2). "관심지역만 남기기"가 아니라 "먼 경기 도시만 제외".
+ * 추천 엔진 isPreferredRegion과 동일 규칙의 읽기측 미러.
+ *
+ * 유지: 관심지역(별칭·부분일치) · 서울(인접 metro) · 시군구 미상(경기 표기만, best-effort)
+ * 제외: 시군구가 명확히 관심지역 밖인 경기 도시(이천·양주·화성·성남 등)
+ * regions 비어 있으면 전체 유지(필터 없음).
+ */
+export function passesRegion(notice: Notice, regions?: string[]): boolean {
+  if (!regions || regions.length === 0) return true;
+  const sigu = notice.region_sigu;
+  if (!sigu) return true; // 지역 미상 → 유지(데이터 미비 시 비우지 않음)
+  if (notice.region_sido === "서울") return true; // 서울은 인접 권역으로 유지
+  const prefs = regions.map((r) => REGION_ALIAS[r] ?? r);
+  if (prefs.some((pr) => pr === sigu || sigu.includes(pr) || pr.includes(sigu))) return true;
+  return false; // 관심지역 밖 경기 도시 → 제외
+}
+
 export function defaultFeedFilter(): FeedFilter {
   return { hideExpired: true };
 }
@@ -49,5 +77,6 @@ export function isExpired(applyEnd: string | null, today: string): boolean {
 export function passesFilter(notice: Notice, filter: FeedFilter, today: string): boolean {
   if (!matchesKind(notice, filter.kind)) return false;
   if (filter.hideExpired && isExpired(notice.apply_end, today)) return false;
+  if (!passesRegion(notice, filter.regions)) return false;
   return true;
 }

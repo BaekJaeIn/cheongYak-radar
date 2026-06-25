@@ -7,7 +7,7 @@ import { DetailHeader } from "@/features/detail/DetailHeader";
 import { ScheduleTimeline } from "@/features/detail/ScheduleTimeline";
 import { EligibilityDetail } from "@/features/detail/EligibilityDetail";
 import { AiSummary } from "@/features/detail/AiSummary";
-import { AreaInfo } from "@/features/detail/AreaInfo";
+import { DetailFacts } from "@/features/detail/DetailFacts";
 import { SourceLink } from "@/features/detail/SourceLink";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +34,7 @@ export default async function NoticeDetailPage({ params }: { params: { id: strin
       <ScheduleTimeline notice={notice} today={today} />
       <EligibilityDetail rec={rec} eligibility={notice.eligibility} />
       <AiSummary summary={notice.eligibility_summary} />
-      <AreaInfo notice={notice} />
+      <DetailFacts notice={notice} />
       <SourceLink url={notice.url} />
     </div>
   );

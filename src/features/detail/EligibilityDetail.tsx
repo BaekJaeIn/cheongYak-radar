@@ -38,6 +38,28 @@ export function EligibilityDetail({
         </p>
       )}
 
+      {rec?.scoreBreakdown && Object.keys(rec.scoreBreakdown).length > 0 && (
+        <div className="mt-3 border-t pt-3" data-testid="score-breakdown">
+          <p className="mb-1 text-xs font-medium text-gray-500">추천 점수 구성 (총 {Math.round(rec.score)}점)</p>
+          <ul className="flex flex-col gap-1">
+            {Object.entries(rec.scoreBreakdown)
+              .sort((a, b) => b[1] - a[1])
+              .map(([k, v]) => (
+                <li key={k} className="flex items-center gap-2 text-xs">
+                  <span className="w-16 shrink-0 text-gray-600">{k}</span>
+                  <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100">
+                    <span
+                      className="block h-full rounded-full bg-blue-300"
+                      style={{ width: `${Math.min(100, (v / Math.max(rec.score, 1)) * 100)}%` }}
+                    />
+                  </span>
+                  <span className="w-8 shrink-0 text-right text-gray-500">{v}점</span>
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
+
       {lines.length > 0 && (
         <div className="mt-3 border-t pt-3">
           <p className="mb-1 text-xs font-medium text-gray-500">공고 자격조건</p>

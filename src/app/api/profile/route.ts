@@ -20,26 +20,50 @@ export async function PUT(req: Request) {
   try {
     const body = (await req.json()) as HouseholdProfile;
     const profile = await saveProfile(body);
-    // US-6.2: 프로필 변경 → collect Edge Function recompute 액션 트리거(비차단)
-    await triggerRecompute();
-    return NextResponse.json({ profile });
+    // US-6.2: 프로필 변경 → collect Edge Function recompute 액션 트리거.
+    // 결과를 응답에 담아 클라가 갱신 성공/실패를 인지(이전엔 비차단이라 "변경 안 됨"처럼 보임).
+    const recompute = await triggerRecompute();
+    return NextResponse.json({ profile, recompute });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
 }
 
-/** collect Edge Function에 재계산만 요청(로직 중복 방지, infra §4). 실패는 비차단. */
-async function triggerRecompute(): Promise<void> {
+interface RecomputeStatus {
+  ok: boolean;
+  recommended?: number;
+  newRecommendations?: number;
+  error?: string;
+}
+
+/** collect Edge Function에 재계산만 요청(로직 중복 방지, infra §4). 결과/실패를 구조화 반환. */
+async function triggerRecompute(): Promise<RecomputeStatus> {
   const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return;
+  if (!url || !key) {
+    return { ok: false, error: "서버 환경변수(SUPABASE_URL/SERVICE_ROLE_KEY) 미설정 — 추천 갱신을 건너뜀" };
+  }
   try {
-    await fetch(`${url}/functions/v1/collect`, {
+    const res = await fetch(`${url}/functions/v1/collect`, {
       method: "POST",
       headers: { "content-type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({ action: "recompute" }),
     });
+    if (!res.ok) {
+      return { ok: false, error: `추천 갱신 실패(HTTP ${res.status})` };
+    }
+    const data = (await res.json().catch(() => ({}))) as {
+      recommended?: number;
+      newRecommendations?: number;
+      skipped?: string;
+    };
+    return {
+      ok: true,
+      recommended: data.recommended,
+      newRecommendations: data.newRecommendations,
+      error: data.skipped, // 예: "프로필 미입력"
+    };
   } catch (e) {
-    console.warn("recompute 트리거 실패(무시):", (e as Error).message);
+    return { ok: false, error: `추천 갱신 트리거 실패: ${(e as Error).message}` };
   }
 }

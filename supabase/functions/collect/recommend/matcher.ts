@@ -47,6 +47,46 @@ function monthsSince(since: string | undefined, today: string): number | null {
   return Math.max(0, Math.floor((b - a) / (30 * 86400000)));
 }
 
+/** 거주지가 우선공급 요건 지역에 해당하는지. region 미상이면 true(범위 보수적). */
+function residenceMatchesRegion(
+  res: { sido?: string; sigu?: string } | undefined,
+  region: string | undefined,
+): boolean {
+  if (!res) return false;
+  if (!region) return true;
+  // 수도권/해당지역 등 광역 표기 → 서울·경기면 인정
+  if (/수도권|해당지역|서울·?경기/.test(region)) {
+    return res.sido === "서울" || res.sido === "경기";
+  }
+  const fields = [res.sido ?? "", res.sigu ?? ""];
+  return fields.some((f) => f && (f.includes(region) || region.includes(f)));
+}
+
+/**
+ * 본인·여자친구(배우자) 거주지 중 우선공급 요건 지역에 해당하는 최장 거주개월.
+ * 해당 지역 거주가 없으면 0, 거주지 정보 자체가 없으면 null. (BR-U6-5, v2 여친 거주지 반영)
+ */
+function bestResidencyMonths(
+  profile: HouseholdProfile,
+  region: string | undefined,
+  today: string,
+): number | null {
+  const residences = [profile.residence, profile.partnerResidence].filter(Boolean) as {
+    sido?: string;
+    sigu?: string;
+    since: string;
+  }[];
+  if (residences.length === 0) return null;
+  let best: number | null = null;
+  for (const r of residences) {
+    const m = monthsSince(r.since, today);
+    if (m == null) continue;
+    const eff = residenceMatchesRegion(r, region) ? m : 0;
+    best = best == null ? eff : Math.max(best, eff);
+  }
+  return best;
+}
+
 function combinedIncome(p: HouseholdProfile): number {
   return (p.self?.monthlyIncome ?? 0) + (p.partner?.monthlyIncome ?? 0);
 }
@@ -79,6 +119,11 @@ function evalType(
   // BR-U6-1 무주택 (핵심 선결 조건)
   if (profile.homeless === false) {
     return { type, status: "ineligible", reasons: ["무주택 요건 미충족(보유 주택 있음)"] };
+  }
+
+  // v2: 1인 청년 대상 유형(청년매입임대·청년안심주택 등)은 부부(2인 이상) 가구 비해당.
+  if (type === "청년" && (profile.members ?? 1) >= 2) {
+    return { type, status: "ineligible", reasons: ["1인 청년 대상 — 부부 가구 비해당"] };
   }
 
   // BR-U6-6 예비신혼 / 생애최초 (조건부, A-4)
@@ -137,10 +182,13 @@ function evalType(
   }
 
   // BR-U6-5 거주요건 (해당지역 우선 — 미충족이어도 일반자격 유지)
+  // v2: 본인·여자친구 거주지 중 요건 지역에 해당하는 최장 거주기간으로 판정.
   const resReq = el?.residencyReq;
   if (resReq) {
-    const months = monthsSince(profile.residence?.since, today);
-    if (months == null || months < resReq.months) {
+    const months = bestResidencyMonths(profile, resReq.region, today);
+    if (months != null && months >= resReq.months) {
+      reasons.push(`해당지역 우선공급 거주요건 충족(${months}개월)`);
+    } else {
       reasons.push("해당지역 우선공급 거주기간 미충족(일반 자격 유지)");
     }
   }
