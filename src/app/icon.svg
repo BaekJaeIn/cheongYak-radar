@@ -1,0 +1,39 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="청약레이더">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#3b82f6"/>
+    </linearGradient>
+    <radialGradient id="sweep" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+      gradientTransform="translate(256 256) rotate(-55) scale(196)">
+      <stop offset="0" stop-color="#dbeafe" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#dbeafe" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 배경(전체 채움 — maskable 안전) -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- 레이더 스윕 부채꼴 -->
+  <path d="M256 256 L452 256 A196 196 0 0 0 339 75 Z" fill="url(#sweep)"/>
+
+  <!-- 레이더 링 + 십자선 -->
+  <g fill="none" stroke="#ffffff" stroke-opacity="0.38" stroke-width="7">
+    <circle cx="256" cy="256" r="196"/>
+    <circle cx="256" cy="256" r="132"/>
+    <circle cx="256" cy="256" r="68"/>
+    <line x1="60" y1="256" x2="452" y2="256"/>
+    <line x1="256" y1="60" x2="256" y2="452"/>
+  </g>
+  <!-- 스윕 선 -->
+  <line x1="256" y1="256" x2="339" y2="75" stroke="#eff6ff" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- 가운데 집(탐지된 청약) -->
+  <g fill="#ffffff">
+    <path d="M256 188 l74 58 v6 h-22 v66 a8 8 0 0 1 -8 8 h-88 a8 8 0 0 1 -8 -8 v-66 h-22 v-6 z"/>
+    <rect x="242" y="286" width="28" height="40" rx="3" fill="#1d4ed8"/>
+  </g>
+
+  <!-- 블립(작은 강조점) -->
+  <circle cx="338" cy="180" r="11" fill="#fde047"/>
+</svg>
