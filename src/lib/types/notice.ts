@@ -1,7 +1,7 @@
 // 청약레이더 공유 도메인 타입 (U2 소유, 전 단위 공유)
 // 근거: aidlc-docs/.../U2-data-platform/functional-design/domain-entities.md
 
-export type SourceType = "apt" | "lh" | "sh" | "private";
+export type SourceType = "apt" | "lh" | "sh" | "gh" | "private";
 
 export type Priority = "1순위" | "2순위" | "무순위";
 
@@ -91,18 +91,38 @@ export const DEFAULT_REGIONS: string[] = ["안양시", "군포시", "의왕시",
 export function defaultFilter(): NoticeFilter {
   return {
     regions: [...DEFAULT_REGIONS],
-    sources: ["apt", "lh", "sh", "private"],
+    sources: ["apt", "lh", "sh", "gh", "private"],
     priorities: [],
     hideExpired: true,
   };
 }
 
-export const ALL_SOURCES: SourceType[] = ["apt", "lh", "sh", "private"];
+export const ALL_SOURCES: SourceType[] = ["apt", "lh", "sh", "gh", "private"];
 
-/** 유형 배지 라벨 (NFR-7: 색상 외 텍스트 병기). */
+/** 공급원(기관+유형) 라벨 — 프로필 필터용. (NFR-7: 색상 외 텍스트 병기) */
 export const SOURCE_LABEL: Record<SourceType, string> = {
   apt: "분양",
   lh: "LH임대",
   sh: "SH임대",
+  gh: "GH임대",
   private: "민간임대",
 };
+
+/** 기관 배지 라벨 — 어디서 모집하는지(목록 표시용). */
+export const PROVIDER_LABEL: Record<SourceType, string> = {
+  apt: "청약홈",
+  lh: "LH",
+  sh: "SH",
+  gh: "GH",
+  private: "민간",
+};
+
+/** 유형 배지 라벨 — 공급유형 텍스트에서 분양/임대/전세 등 판별(목록 표시용). */
+export function supplyKindLabel(supplyType: string | null | undefined, source: SourceType): string {
+  const t = supplyType ?? "";
+  if (t.includes("전세")) return "전세";
+  if (t.includes("희망타운")) return "공공분양";
+  if (t.includes("분양")) return "분양";
+  if (t.includes("임대")) return "임대";
+  return source === "apt" ? "분양" : "임대";
+}

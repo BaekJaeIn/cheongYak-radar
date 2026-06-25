@@ -1,7 +1,7 @@
 // 추천 카드 (C12, BR-U3-1~4). 서버 컴포넌트.
 import Link from "next/link";
 import type { FeedItem } from "@/features/recommendations/types";
-import { TypeBadge, NewBadge, NewlywedTag } from "./badges";
+import { ProviderBadge, KindBadge, NewBadge, NewlywedTag } from "./badges";
 import { DdayBadge } from "./DdayBadge";
 import { EligibilityBadge } from "./EligibilityBadge";
 import { MatchReason } from "./MatchReason";
@@ -16,7 +16,8 @@ export function RecommendationCard({ item, today }: { item: FeedItem; today: str
       data-testid={`rec-card-${notice.id}`}
     >
       <div className="mb-1 flex flex-wrap items-center gap-1">
-        <TypeBadge source={notice.source} />
+        <ProviderBadge source={notice.source} />
+        <KindBadge supplyType={notice.supply_type} source={notice.source} />
         <NewlywedTag newlywed={notice.newlywed} preNewlywed={notice.pre_newlywed} />
         {isNew(notice.created_at, today) && <NewBadge />}
         <EligibilityBadge reasonSummary={rec.reasonSummary} />

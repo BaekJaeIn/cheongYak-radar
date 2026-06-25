@@ -6,6 +6,7 @@ import type { Collector, NoticeInput, SourceType } from "./types.ts";
 import { getMockNotices } from "./mock.ts";
 import { ApplyHomeCollector } from "./collectors/apply-home.ts";
 import { LhCollector } from "./collectors/lh.ts";
+import { GhCollector } from "./collectors/gh.ts";
 import { MyhomeComplexCollector } from "./collectors/myhome-complex.ts";
 import { ShCollector } from "./collectors/sh.ts";
 import { upsertNotices } from "./upsert.ts";
@@ -43,12 +44,14 @@ function isMockMode(): boolean {
 
 function liveCollectors(): Collector[] {
   // 검증 완료: ApplyHome(청약홈 15098547).
-  // LH(15088707 파일데이터): LH_FILEDATA_URL 설정 시 적재, 없으면 안전 skip.
+  // LH(15088707): LH_FILEDATA_URL 설정 시 적재, 없으면 안전 skip.
+  // GH(경기주택도시공사): GH_API_URL 설정 시 적재, 없으면 안전 skip.
   // MyhomeComplex(15110581): 엔드포인트 미확정 → 빈 결과로 비차단.
   // SH(크롤러): 셀렉터 검증 후 재활성.
   return [
     new ApplyHomeCollector(),
     new LhCollector(),
+    new GhCollector(),
     new MyhomeComplexCollector(),
     // new ShCollector(),
   ];

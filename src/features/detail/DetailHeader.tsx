@@ -1,6 +1,6 @@
 import type { Notice } from "@/lib/types/notice";
 import type { FeedRec } from "@/features/recommendations/types";
-import { TypeBadge, NewlywedTag } from "@/features/feed/badges";
+import { ProviderBadge, KindBadge, NewlywedTag } from "@/features/feed/badges";
 import { DdayBadge } from "@/features/feed/DdayBadge";
 import { EligibilityBadge } from "@/features/feed/EligibilityBadge";
 
@@ -16,7 +16,8 @@ export function DetailHeader({
   return (
     <header className="rounded-xl border bg-white p-4">
       <div className="mb-2 flex flex-wrap items-center gap-1">
-        <TypeBadge source={notice.source} />
+        <ProviderBadge source={notice.source} />
+        <KindBadge supplyType={notice.supply_type} source={notice.source} />
         <NewlywedTag newlywed={notice.newlywed} preNewlywed={notice.pre_newlywed} />
         {rec && <EligibilityBadge reasonSummary={rec.reasonSummary} />}
         <span className="ml-auto flex items-center gap-1">

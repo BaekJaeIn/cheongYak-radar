@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Notice } from "@/lib/types/notice";
 import { BookmarkStore } from "@/features/bookmarks/store";
 import { getBrowserClient } from "@/lib/supabase/browser";
-import { TypeBadge } from "@/features/feed/badges";
+import { ProviderBadge, KindBadge } from "@/features/feed/badges";
 import { DdayBadge } from "@/features/feed/DdayBadge";
 import { isExpired } from "@/features/feed/dday";
 import { BookmarkButton } from "@/features/bookmarks/BookmarkButton";
@@ -54,7 +54,8 @@ export default function BookmarksPage() {
               data-testid={`bookmark-item-${n.id}`}
             >
               <div className="mb-1 flex items-center gap-1">
-                <TypeBadge source={n.source} />
+                <ProviderBadge source={n.source} />
+                <KindBadge supplyType={n.supply_type} source={n.source} />
                 <span className="ml-auto flex items-center gap-1">
                   <DdayBadge applyEnd={n.apply_end} today={today} />
                   <BookmarkButton noticeId={n.id} />

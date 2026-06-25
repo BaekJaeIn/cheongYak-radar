@@ -1,7 +1,7 @@
 // U1 Edge Function 공유 타입 (U2 src/lib/types/notice.ts의 NoticeInput 미러)
 // Deno 자기완결성을 위해 별도 정의. 필드는 U2 스키마와 일치해야 함.
 
-export type SourceType = "apt" | "lh" | "sh" | "private";
+export type SourceType = "apt" | "lh" | "sh" | "gh" | "private";
 export type Priority = "1순위" | "2순위" | "무순위";
 
 /**
