@@ -76,9 +76,18 @@ describe("passesRegion (v2 관심지역 필터)", () => {
     expect(passesRegion(notice({ region_sigu: "양주시" }), REGIONS)).toBe(false);
     expect(passesRegion(notice({ region_sigu: "화성시" }), REGIONS)).toBe(false);
   });
-  it("시군구 미상(경기 표기만)·서울은 유지", () => {
-    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null }), REGIONS)).toBe(true);
+  it("시군구 미상이고 제목도 도시 단서 없으면 유지(광역 매입임대 등)", () => {
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "공고" }), REGIONS)).toBe(true);
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "[경기북부] 26년 1차 든든전세주택" }), REGIONS)).toBe(true);
     expect(passesRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), REGIONS)).toBe(true);
+  });
+  it("시군구 null이어도 제목에서 먼 도시 추론 시 제외(재수집 전 대응)", () => {
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "고양창릉 A-4BL 신혼희망타운" }), REGIONS)).toBe(false);
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "김포한강 Ac-01a블록" }), REGIONS)).toBe(false);
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "양주옥정 10년 공공임대" }), REGIONS)).toBe(false);
+  });
+  it("시군구 null이어도 제목이 관심지역이면 유지", () => {
+    expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "평촌 어바인퍼스트 신혼희망타운" }), REGIONS)).toBe(true);
   });
   it("관심지역 미설정이면 전체 허용", () => {
     expect(passesRegion(notice({ region_sigu: "이천시" }), [])).toBe(true);
