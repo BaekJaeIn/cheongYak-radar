@@ -76,10 +76,16 @@ describe("passesRegion (v2 관심지역 필터)", () => {
     expect(passesRegion(notice({ region_sigu: "양주시" }), REGIONS)).toBe(false);
     expect(passesRegion(notice({ region_sigu: "화성시" }), REGIONS)).toBe(false);
   });
-  it("시군구 미상이고 제목도 도시 단서 없으면 유지(광역 매입임대 등)", () => {
+  it("경기 광역(도시 단서 없음)은 유지", () => {
     expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "공고" }), REGIONS)).toBe(true);
     expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "[경기북부] 26년 1차 든든전세주택" }), REGIONS)).toBe(true);
-    expect(passesRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), REGIONS)).toBe(true);
+  });
+  it("서울은 관심지역에 '서울'이 없으면 제외", () => {
+    expect(passesRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), REGIONS)).toBe(false);
+    expect(passesRegion(notice({ region_sido: "서울", region_sigu: null, title: "[서울지역본부] 매입임대" }), REGIONS)).toBe(false);
+  });
+  it("관심지역에 '서울'이 있으면 서울 유지", () => {
+    expect(passesRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), [...REGIONS, "서울"])).toBe(true);
   });
   it("시군구 null이어도 제목에서 먼 도시 추론 시 제외(재수집 전 대응)", () => {
     expect(passesRegion(notice({ region_sido: "경기", region_sigu: null, title: "고양창릉 A-4BL 신혼희망타운" }), REGIONS)).toBe(false);

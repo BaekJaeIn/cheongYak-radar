@@ -69,8 +69,12 @@ describe("isPreferredRegion (v2 먼 경기 제외)", () => {
   it("시군구 미상(경기 표기만)은 유지 — 데이터 미비 시 비우지 않음", () => {
     expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: null }), profile)).toBe(true);
   });
-  it("서울은 인접 권역으로 유지", () => {
-    expect(isPreferredRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), profile)).toBe(true);
+  it("서울은 관심지역에 '서울'이 없으면 제외", () => {
+    expect(isPreferredRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), profile)).toBe(false);
+  });
+  it("관심지역에 '서울'이 있으면 서울 유지", () => {
+    const seoulPref = { ...profile, preferences: { ...profile.preferences, regions: ["안양시", "서울"] } };
+    expect(isPreferredRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), seoulPref)).toBe(true);
   });
   it("관심지역 미설정이면 전체 허용", () => {
     const noPref = { ...profile, preferences: { ...profile.preferences, regions: [] } };

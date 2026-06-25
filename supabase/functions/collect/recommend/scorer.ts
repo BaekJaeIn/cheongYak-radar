@@ -43,19 +43,21 @@ export function regionScore(notice: NoticeInput, p: HouseholdProfile): number {
 /**
  * 관심지역 필터 (v2). "관심지역만 남기기"가 아니라 "먼 경기 도시만 제외".
  * - 관심지역 미설정 → true(필터 없음)
- * - 시군구 미상 → true(데이터 미비 시 비우지 않음)
- * - 서울(인접 metro) → true
+ * - 서울(시도/자치구) → 관심지역에 '서울'이 있을 때만 유지
+ * - 시군구 미상(경기 광역) → true(데이터 미비 시 비우지 않음)
  * - 관심 시군구 일치(별칭·부분일치) → true
- * - 그 외(이천·양주·화성 등 관심지역 밖 경기) → false (추천 제외)
+ * - 그 외(이천·양주·화성·고양 등 관심지역 밖 경기) → false (추천 제외)
  *
  * 기존 regionScore의 '같은 시도(경기) 전체 0.5점' 노출 정책을 시군구 기준으로 좁힘.
  */
 export function isPreferredRegion(notice: NoticeInput, p: HouseholdProfile): boolean {
   const regions = p.preferences.regions ?? [];
   if (regions.length === 0) return true; // 관심지역 미설정 → 전체 허용
+  const wantsSeoul = regions.some((r) => r.includes("서울"));
   const sigu = notice.region_sigu;
-  if (!sigu) return true; // 지역 미상 → 유지
-  if (notice.region_sido === "서울") return true; // 서울은 인접 권역으로 유지
+  // 서울(시도 또는 자치구): 관심지역에 '서울'이 있을 때만 유지
+  if (notice.region_sido === "서울" || (sigu != null && sigu.endsWith("구"))) return wantsSeoul;
+  if (!sigu) return true; // 경기 광역(지역 미상) → 유지
   const prefsSigu = regions.map((r) => REGION_ALIAS[r] ?? r);
   if (prefsSigu.some((pr) => pr === sigu || sigu.includes(pr) || pr.includes(sigu))) return true;
   return false; // 관심지역 밖 경기 도시 → 제외

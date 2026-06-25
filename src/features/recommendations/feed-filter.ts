@@ -58,15 +58,17 @@ export function deriveSigu(text: string | null | undefined, sido: string | null)
  * 추천 엔진 isPreferredRegion과 동일 규칙의 읽기측 미러.
  *
  * region_sigu가 비면 제목에서 도시를 추론(deriveSigu) — 재수집 전에도 동작.
- * 유지: 관심지역(별칭·부분일치) · 서울(인접 metro) · 정말로 도시 추론 불가(광역 매입임대 등)
- * 제외: 관심지역 밖으로 확인된 경기 도시(이천·양주·화성·고양·김포 등)
+ * 서울(시도/자치구)은 관심지역에 '서울'이 있을 때만 유지(없으면 제외).
+ * 유지: 관심지역(별칭·부분일치) · 도시 추론 불가(경기 광역 매입임대 등)
+ * 제외: 관심지역 밖으로 확인된 경기 도시(이천·양주·화성·고양·김포 등) · 서울(관심 미포함 시)
  */
 export function passesRegion(notice: Notice, regions?: string[]): boolean {
   if (!regions || regions.length === 0) return true;
-  if (notice.region_sido === "서울") return true; // 서울은 인접 권역으로 유지
+  const wantsSeoul = regions.some((r) => r.includes("서울"));
   const sigu = notice.region_sigu ?? deriveSigu(notice.title, notice.region_sido);
-  if (!sigu) return true; // 도시 추론 불가(광역 단위) → 유지
-  if (sigu.endsWith("구")) return true; // 서울 자치구 → 유지
+  // 서울(시도 또는 자치구): 관심지역에 '서울'이 있을 때만 유지
+  if (notice.region_sido === "서울" || (sigu != null && sigu.endsWith("구"))) return wantsSeoul;
+  if (!sigu) return true; // 경기 광역(도시 추론 불가) → 유지
   const prefs = regions.map((r) => REGION_ALIAS[r] ?? r);
   if (prefs.some((pr) => pr === sigu || sigu.includes(pr) || pr.includes(sigu))) return true;
   return false; // 관심지역 밖 경기 도시 → 제외
