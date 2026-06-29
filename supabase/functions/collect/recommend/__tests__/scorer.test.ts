@@ -69,6 +69,31 @@ describe("isPreferredRegion (v2 먼 경기 제외)", () => {
   it("시군구 미상(경기 표기만)은 유지 — 데이터 미비 시 비우지 않음", () => {
     expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: null }), profile)).toBe(true);
   });
+  it("광역 공고: 관심(경기남부)과 권역 다른 [경기북부] → 제외", () => {
+    expect(
+      isPreferredRegion(
+        notice({ region_sido: "경기", region_sigu: null, title: "[경기북부] 2026년 2차 신혼·신생아 매입임대" }),
+        profile,
+      ),
+    ).toBe(false);
+  });
+  it("광역 공고: 관심지역을 '안양/광명/군포/의왕'(시 생략)로 입력해도 [경기북부] 제외", () => {
+    const bare = { ...profile, preferences: { ...profile.preferences, regions: ["안양", "광명", "군포", "의왕"] } };
+    expect(
+      isPreferredRegion(
+        notice({ region_sido: "경기", region_sigu: null, title: "[경기북부] 신혼·신생아 매입임대(전세형)" }),
+        bare,
+      ),
+    ).toBe(false);
+  });
+  it("광역 공고: 관심(경기남부)과 권역 같은 경기남부 본부 → 포함", () => {
+    expect(
+      isPreferredRegion(
+        notice({ region_sido: "경기", region_sigu: null, title: "[경기지역본부] 행복주택 입주자 모집" }),
+        profile,
+      ),
+    ).toBe(true);
+  });
   it("서울은 관심지역에 '서울'이 없으면 제외", () => {
     expect(isPreferredRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), profile)).toBe(false);
   });

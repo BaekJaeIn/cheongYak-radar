@@ -3,6 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 import { RegisterSW } from "@/features/pwa/RegisterSW";
 import { NotifyToggle } from "@/features/notifications/NotifyToggle";
+import { BottomNav } from "@/features/nav/BottomNav";
 
 export const metadata: Metadata = {
   title: "청약레이더 — 우리 커플 맞춤 추천",
@@ -55,19 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <main className="mx-auto max-w-md px-4 py-4">{children}</main>
 
-        <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
-          <div className="mx-auto flex max-w-md">
-            <Link href="/" className="flex-1 py-3 text-center text-sm font-medium" data-testid="tab-feed">
-              추천
-            </Link>
-            <Link href="/bookmarks" className="flex-1 py-3 text-center text-sm font-medium" data-testid="tab-bookmarks">
-              관심
-            </Link>
-            <Link href="/settings" className="flex-1 py-3 text-center text-sm font-medium" data-testid="tab-settings">
-              내 프로필
-            </Link>
-          </div>
-        </nav>
+        <BottomNav />
       </body>
     </html>
   );

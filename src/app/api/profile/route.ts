@@ -1,6 +1,7 @@
 // /api/profile — 가구 프로필 GET/PUT (FR-8, US-6.1/6.2).
 // service_role은 서버에서만 사용(클라 미노출, NFR-3 / BR-U6-16). 저장 후 재계산 트리거.
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getProfile, saveProfile } from "@/features/profile/repository";
 import type { HouseholdProfile } from "@/lib/types/profile";
 
@@ -23,6 +24,9 @@ export async function PUT(req: Request) {
     // US-6.2: 프로필 변경 → collect Edge Function recompute 액션 트리거.
     // 결과를 응답에 담아 클라가 갱신 성공/실패를 인지(이전엔 비차단이라 "변경 안 됨"처럼 보임).
     const recompute = await triggerRecompute();
+    // 추천 갱신 후 피드/관심 페이지 서버 캐시 무효화 (클라는 router.refresh로 보강).
+    revalidatePath("/");
+    revalidatePath("/bookmarks");
     return NextResponse.json({ profile, recompute });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

@@ -17,6 +17,37 @@ const PREFERRED_SIDO_OF: Record<string, string> = {
   의왕시: "경기",
 };
 
+// 경기 권역(북부/남부) — 광역 공고("[경기북부]" 등)와 관심지역의 권역 일치 판정용.
+const GYEONGGI_NORTH = new Set([
+  "고양시", "의정부시", "파주시", "양주시", "구리시", "남양주시", "포천시",
+  "동두천시", "연천군", "가평군", "김포시",
+]);
+const GYEONGGI_SOUTH = new Set([
+  "수원시", "성남시", "안양시", "부천시", "광명시", "평택시", "안산시", "과천시",
+  "오산시", "시흥시", "군포시", "의왕시", "하남시", "용인시", "이천시", "안성시",
+  "화성시", "광주시", "여주시",
+]);
+type Zone = "north" | "south";
+
+function zoneOfSigu(sigu: string): Zone | null {
+  // 접미사(시/군/구) 유무 무관 매칭 — 사용자가 "안양"/"안양시" 어느 쪽으로 입력해도 인식.
+  const base = sigu.replace(/(시|군|구)$/, "");
+  const inSet = (set: Set<string>) => [...set].some((c) => c.replace(/(시|군)$/, "") === base);
+  if (inSet(GYEONGGI_NORTH)) return "north";
+  if (inSet(GYEONGGI_SOUTH)) return "south";
+  return null;
+}
+
+/** 광역 공고의 권역을 제목에서 추론(경기북부/남부 + 권역 대표도시). */
+function noticeGyeonggiZone(notice: NoticeInput): Zone | null {
+  const t = `${notice.title ?? ""} ${notice.region_sigu ?? ""}`;
+  if (/경기\s*북부/.test(t)) return "north";
+  if (/경기\s*남부|경기지역본부/.test(t)) return "south";
+  for (const c of GYEONGGI_NORTH) if (t.includes(c.replace(/(시|군)$/, ""))) return "north";
+  for (const c of GYEONGGI_SOUTH) if (t.includes(c.replace(/(시|군)$/, ""))) return "south";
+  return null;
+}
+
 function daysUntil(applyEnd: string | null, today: string): number | null {
   if (!applyEnd) return null;
   const a = new Date(applyEnd + "T00:00:00Z").getTime();
@@ -57,8 +88,15 @@ export function isPreferredRegion(notice: NoticeInput, p: HouseholdProfile): boo
   const sigu = notice.region_sigu;
   // 서울(시도 또는 자치구): 관심지역에 '서울'이 있을 때만 유지
   if (notice.region_sido === "서울" || (sigu != null && sigu.endsWith("구"))) return wantsSeoul;
-  if (!sigu) return true; // 경기 광역(지역 미상) → 유지
   const prefsSigu = regions.map((r) => REGION_ALIAS[r] ?? r);
+  if (!sigu) {
+    // 경기 광역 공고(시군구 미상, 예: "[경기북부]") → 권역(북부/남부)으로 판정.
+    const noticeZone = noticeGyeonggiZone(notice);
+    if (!noticeZone) return true; // 권역 불명 → 보수적으로 유지
+    const userZones = new Set(prefsSigu.map(zoneOfSigu).filter(Boolean) as Zone[]);
+    if (userZones.size === 0) return true; // 관심지역 권역 불명 → 유지
+    return userZones.has(noticeZone); // 관심 권역과 일치할 때만 유지
+  }
   if (prefsSigu.some((pr) => pr === sigu || sigu.includes(pr) || pr.includes(sigu))) return true;
   return false; // 관심지역 밖 경기 도시 → 제외
 }
