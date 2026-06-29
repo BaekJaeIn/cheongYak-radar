@@ -66,10 +66,19 @@ describe("isPreferredRegion (v2 먼 경기 제외)", () => {
     expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: "양주시" }), profile)).toBe(false);
     expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: "화성시" }), profile)).toBe(false);
   });
-  it("시군구 미상(경기 표기만)은 유지 — 데이터 미비 시 비우지 않음", () => {
-    expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: null }), profile)).toBe(true);
+  it("시군구 미상 + 제목에도 관심 도시 없음 → 제외(엄격)", () => {
+    expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: null, title: "공고" }), profile)).toBe(false);
   });
-  it("광역 공고: 관심(경기남부)과 권역 다른 [경기북부] → 제외", () => {
+  it("제목에 관심 도시명(택지/단지)이 있으면 광역이어도 포함", () => {
+    const goyang = { ...profile, preferences: { ...profile.preferences, regions: ["고양시"] } };
+    expect(
+      isPreferredRegion(
+        notice({ region_sido: "경기", region_sigu: null, title: "고양창릉 A-4BL 신혼희망타운 행복주택" }),
+        goyang,
+      ),
+    ).toBe(true);
+  });
+  it("광역 [경기북부] (도시 미특정) → 제외", () => {
     expect(
       isPreferredRegion(
         notice({ region_sido: "경기", region_sigu: null, title: "[경기북부] 2026년 2차 신혼·신생아 매입임대" }),
@@ -77,22 +86,18 @@ describe("isPreferredRegion (v2 먼 경기 제외)", () => {
       ),
     ).toBe(false);
   });
-  it("광역 공고: 관심지역을 '안양/광명/군포/의왕'(시 생략)로 입력해도 [경기북부] 제외", () => {
-    const bare = { ...profile, preferences: { ...profile.preferences, regions: ["안양", "광명", "군포", "의왕"] } };
+  it("다른 도시(분당=성남)는 관심(광명)과 같은 남부여도 제외 — 입력한 지역만", () => {
+    const gm = { ...profile, preferences: { ...profile.preferences, regions: ["광명시"] } };
     expect(
       isPreferredRegion(
-        notice({ region_sido: "경기", region_sigu: null, title: "[경기북부] 신혼·신생아 매입임대(전세형)" }),
-        bare,
+        notice({ region_sido: "경기", region_sigu: null, title: "e편한세상 분당 퍼스트빌리지(성남낙생 A-1BL) 신혼희망타운" }),
+        gm,
       ),
     ).toBe(false);
   });
-  it("광역 공고: 관심(경기남부)과 권역 같은 경기남부 본부 → 포함", () => {
-    expect(
-      isPreferredRegion(
-        notice({ region_sido: "경기", region_sigu: null, title: "[경기지역본부] 행복주택 입주자 모집" }),
-        profile,
-      ),
-    ).toBe(true);
+  it("관심지역 '광명'(시 생략) 입력도 인식", () => {
+    const gm = { ...profile, preferences: { ...profile.preferences, regions: ["광명"] } };
+    expect(isPreferredRegion(notice({ region_sido: "경기", region_sigu: "광명시" }), gm)).toBe(true);
   });
   it("서울은 관심지역에 '서울'이 없으면 제외", () => {
     expect(isPreferredRegion(notice({ region_sido: "서울", region_sigu: "동작구" }), profile)).toBe(false);

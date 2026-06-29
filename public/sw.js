@@ -1,5 +1,5 @@
 // 청약레이더 서비스워커 (수동, BR-U5-5/6). 앱셸 캐시 + Web Push 수신.
-const CACHE = "cheongyak-v2";
+const CACHE = "cheongyak-v3";
 const SHELL = ["/", "/bookmarks", "/settings"];
 
 self.addEventListener("install", (e) => {
@@ -34,7 +34,8 @@ self.addEventListener("push", (e) => {
       body: data.body,
       data: { url: data.url },
       icon: "/icon-192.png",
-      badge: "/icon-192.png",
+      // badge(상태바 단색 아이콘)는 전용 단색 자산이 없어 생략 — 풀컬러를 쓰면
+      // 안드로이드가 흰 사각형으로 렌더링해 깨져 보임.
     }),
   );
 });

@@ -17,35 +17,9 @@ const PREFERRED_SIDO_OF: Record<string, string> = {
   의왕시: "경기",
 };
 
-// 경기 권역(북부/남부) — 광역 공고("[경기북부]" 등)와 관심지역의 권역 일치 판정용.
-const GYEONGGI_NORTH = new Set([
-  "고양시", "의정부시", "파주시", "양주시", "구리시", "남양주시", "포천시",
-  "동두천시", "연천군", "가평군", "김포시",
-]);
-const GYEONGGI_SOUTH = new Set([
-  "수원시", "성남시", "안양시", "부천시", "광명시", "평택시", "안산시", "과천시",
-  "오산시", "시흥시", "군포시", "의왕시", "하남시", "용인시", "이천시", "안성시",
-  "화성시", "광주시", "여주시",
-]);
-type Zone = "north" | "south";
-
-function zoneOfSigu(sigu: string): Zone | null {
-  // 접미사(시/군/구) 유무 무관 매칭 — 사용자가 "안양"/"안양시" 어느 쪽으로 입력해도 인식.
-  const base = sigu.replace(/(시|군|구)$/, "");
-  const inSet = (set: Set<string>) => [...set].some((c) => c.replace(/(시|군)$/, "") === base);
-  if (inSet(GYEONGGI_NORTH)) return "north";
-  if (inSet(GYEONGGI_SOUTH)) return "south";
-  return null;
-}
-
-/** 광역 공고의 권역을 제목에서 추론(경기북부/남부 + 권역 대표도시). */
-function noticeGyeonggiZone(notice: NoticeInput): Zone | null {
-  const t = `${notice.title ?? ""} ${notice.region_sigu ?? ""}`;
-  if (/경기\s*북부/.test(t)) return "north";
-  if (/경기\s*남부|경기지역본부/.test(t)) return "south";
-  for (const c of GYEONGGI_NORTH) if (t.includes(c.replace(/(시|군)$/, ""))) return "north";
-  for (const c of GYEONGGI_SOUTH) if (t.includes(c.replace(/(시|군)$/, ""))) return "south";
-  return null;
+/** 관심 시군구 이름(접미사 제거)을 공고의 시군구/제목에서 찾기 위한 베이스. */
+function regionBase(name: string): string {
+  return name.replace(/(특별시|광역시|특별자치시|특별자치도|시|군|구|도)$/g, "").trim();
 }
 
 function daysUntil(applyEnd: string | null, today: string): number | null {
@@ -72,14 +46,12 @@ export function regionScore(notice: NoticeInput, p: HouseholdProfile): number {
 }
 
 /**
- * 관심지역 필터 (v2). "관심지역만 남기기"가 아니라 "먼 경기 도시만 제외".
+ * 관심지역 필터 (v2, 엄격). "입력한 시군구"가 실제로 공고에 나타날 때만 유지.
  * - 관심지역 미설정 → true(필터 없음)
  * - 서울(시도/자치구) → 관심지역에 '서울'이 있을 때만 유지
- * - 시군구 미상(경기 광역) → true(데이터 미비 시 비우지 않음)
- * - 관심 시군구 일치(별칭·부분일치) → true
- * - 그 외(이천·양주·화성·고양 등 관심지역 밖 경기) → false (추천 제외)
- *
- * 기존 regionScore의 '같은 시도(경기) 전체 0.5점' 노출 정책을 시군구 기준으로 좁힘.
+ * - 경기 → 관심 시군구 이름(별칭 적용, 접미사 무관)이 공고의 시군구 또는 제목
+ *   (택지/단지명 포함)에 나타날 때만 유지. 광역/본부 단위로 도시가 특정되지 않는
+ *   공고(예: "[경기북부]")나 다른 도시(분당=성남 등)는 제외 → "입력한 지역만".
  */
 export function isPreferredRegion(notice: NoticeInput, p: HouseholdProfile): boolean {
   const regions = p.preferences.regions ?? [];
@@ -88,17 +60,14 @@ export function isPreferredRegion(notice: NoticeInput, p: HouseholdProfile): boo
   const sigu = notice.region_sigu;
   // 서울(시도 또는 자치구): 관심지역에 '서울'이 있을 때만 유지
   if (notice.region_sido === "서울" || (sigu != null && sigu.endsWith("구"))) return wantsSeoul;
-  const prefsSigu = regions.map((r) => REGION_ALIAS[r] ?? r);
-  if (!sigu) {
-    // 경기 광역 공고(시군구 미상, 예: "[경기북부]") → 권역(북부/남부)으로 판정.
-    const noticeZone = noticeGyeonggiZone(notice);
-    if (!noticeZone) return true; // 권역 불명 → 보수적으로 유지
-    const userZones = new Set(prefsSigu.map(zoneOfSigu).filter(Boolean) as Zone[]);
-    if (userZones.size === 0) return true; // 관심지역 권역 불명 → 유지
-    return userZones.has(noticeZone); // 관심 권역과 일치할 때만 유지
-  }
-  if (prefsSigu.some((pr) => pr === sigu || sigu.includes(pr) || pr.includes(sigu))) return true;
-  return false; // 관심지역 밖 경기 도시 → 제외
+  // 경기: 관심 시군구 이름이 공고 시군구/제목에 직접 나타나야 함.
+  const hay = `${sigu ?? ""} ${notice.title ?? ""}`;
+  return regions
+    .map((r) => REGION_ALIAS[r] ?? r)
+    .some((pr) => {
+      const base = regionBase(pr);
+      return base.length >= 2 && hay.includes(base);
+    });
 }
 
 /**
