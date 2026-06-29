@@ -28,8 +28,13 @@ export function NotifyToggle() {
         setState("granted");
       } else {
         const perm = (await currentPermission()) as NotificationPermission;
-        setState(perm);
-        if (perm !== "granted") setError("알림 권한이 필요해요(브라우저에서 허용).");
+        if (perm === "granted") {
+          // 권한은 허용됐지만 서버 구독 저장 실패 — '켜짐'으로 오인 표시하지 않음.
+          setError("알림 등록에 실패했어요. 잠시 후 다시 시도해 주세요.");
+        } else {
+          setState(perm);
+          setError("알림 권한이 필요해요(브라우저에서 허용).");
+        }
       }
     } catch (e) {
       setError(`알림 설정 실패: ${(e as Error).message}`);
