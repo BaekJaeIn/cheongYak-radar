@@ -12,7 +12,7 @@ import { ShCollector } from "./collectors/sh.ts";
 import { upsertNotices } from "./upsert.ts";
 import { summarizeMissing } from "./summarize.ts";
 import { recompute, type RecomputeResult } from "./recommend/service.ts";
-import { dispatch } from "./push.ts";
+import { dispatch, dispatchTest } from "./push.ts";
 
 interface SourceStat {
   source: string;
@@ -133,6 +133,13 @@ Deno.serve(async (req: Request) => {
     let action: string | undefined;
     if (req.method === "POST") {
       action = await req.json().then((b) => b?.action).catch(() => undefined);
+    }
+    // { action: "test-push" } → 신규추천 무관, 전체 구독자에 테스트 알림 무조건 발송
+    if (action === "test-push") {
+      const r = await dispatchTest(serviceClient());
+      return new Response(JSON.stringify({ testPush: r }), {
+        headers: { "content-type": "application/json" },
+      });
     }
     const result = action === "recompute" ? await runRecomputeOnly() : await run();
     return new Response(JSON.stringify(result), {
