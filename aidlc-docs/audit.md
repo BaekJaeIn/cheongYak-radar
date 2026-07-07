@@ -672,3 +672,11 @@
 **Context**: v5 완료·배포.
 
 ---
+
+## 공고분석 extractFailed 버그 수정 — thinking 토큰 예산 소진
+**Timestamp**: 2026-07-07T04:10:00Z
+**User Input**: "이 공고문 내용을 읽지 못했다고 나오는데 왜 그러는거야. 수정해줘" (부천원종 C1블록 행복주택 42p PDF 첨부)
+**AI Response**: "원인 진단·재현: gemini-2.5-flash는 thinking 모델 — 42페이지 규모 입력(≈25k tokens)에서 사고 토큰 1,919개가 maxOutputTokens=2000 예산을 소진, finishReason=MAX_TOKENS로 JSON이 115자에서 잘려 parseExtracted null → extractFailed('읽지 못했어요'). 수정: analyze.ts generationConfig에 thinkingConfig.thinkingBudget=0 + maxOutputTokens 4096, 응답 parts 전체 join(분할 대비), 빈 응답 시 finishReason·usage 로깅. 검증: 로컬 A/B 재현(수정안 STOP·완전 JSON), vitest·tsc 통과, Edge 재배포 후 e2e — 비공고 PDF→notAnnouncement 유지, 실제 공고 내용 PDF→ok:true(접수 7/14~16, 소득 100%·자산 3.45억·차 4,542만 추출; 행복주택/신혼부부 eligible·청년 ineligible 판정 정확)."
+**Context**: v4 공고분석 프로덕션 버그 수정·배포 완료.
+
+---

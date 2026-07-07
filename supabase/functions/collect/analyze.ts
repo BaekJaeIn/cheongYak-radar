@@ -176,7 +176,10 @@ async function extractFromPdf(
         },
       ],
       generationConfig: {
-        maxOutputTokens: 2000,
+        // gemini-2.5-flash는 thinking 모델 — 사고 토큰이 maxOutputTokens 예산을 소진하면
+        // 본문이 빈 채(MAX_TOKENS)로 잘려 추출이 실패한다. 구조화 추출에는 사고 불필요 → 끔.
+        thinkingConfig: { thinkingBudget: 0 },
+        maxOutputTokens: 4096,
         temperature: 0,
         responseMimeType: "application/json",
       },
@@ -184,8 +187,19 @@ async function extractFromPdf(
   });
   if (!res.ok) throw new Error(`Gemini ${res.status}`);
   const json = await res.json();
-  const text = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-  return typeof text === "string" && text.trim().length > 0 ? text : null;
+  const candidate = json?.candidates?.[0];
+  const parts: unknown[] = candidate?.content?.parts ?? [];
+  // 긴 응답은 parts가 나뉠 수 있어 전체를 이어붙인다.
+  const text = parts
+    .map((p) => (typeof (p as { text?: unknown })?.text === "string" ? (p as { text: string }).text : ""))
+    .join("");
+  if (text.trim().length === 0) {
+    console.warn(
+      `[analyze] Gemini 빈 응답 — finishReason=${candidate?.finishReason}, usage=${JSON.stringify(json?.usageMetadata ?? {})}`,
+    );
+    return null;
+  }
+  return text;
 }
 
 /** PDF 업로드 1건 분석: 추출 → 프로필 조회 → 판정. (C36) */
