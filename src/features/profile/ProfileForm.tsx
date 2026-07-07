@@ -58,6 +58,11 @@ export function ProfileForm() {
     return Number.isFinite(n) ? n : 0;
   }
 
+  /** 금액 입력 표시용 — 천 단위 콤마 (0/빈 값은 빈 문자열). 파싱은 num()이 콤마 제거. */
+  function fmt(n: number): string {
+    return n ? n.toLocaleString("ko-KR") : "";
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("saving");
@@ -188,13 +193,13 @@ export function ProfileForm() {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={label}>본인</label>
-            <input type="number" className={field} value={p.self.monthlyIncome || ""}
+            <input type="text" inputMode="numeric" className={field} value={fmt(p.self.monthlyIncome)}
               onChange={(e) => setP({ ...p, self: { ...p.self, monthlyIncome: num(e.target.value) } })}
               data-testid="profile-self-income" />
           </div>
           <div>
-            <label className={label}>배우자</label>
-            <input type="number" className={field} value={p.partner.monthlyIncome || ""}
+            <label className={label}>배우자(예비배우자)</label>
+            <input type="text" inputMode="numeric" className={field} value={fmt(p.partner.monthlyIncome)}
               onChange={(e) => setP({ ...p, partner: { ...p.partner, monthlyIncome: num(e.target.value) } })} />
           </div>
         </div>
@@ -210,7 +215,7 @@ export function ProfileForm() {
               onChange={(e) => setP({ ...p, self: { ...p.self, savingsAccount: { type: p.self.savingsAccount?.type ?? "주택청약종합저축", count: num(e.target.value), amount: p.self.savingsAccount?.amount ?? 0 } } })} />
           </div>
           <div>
-            <label className={label}>배우자</label>
+            <label className={label}>배우자(예비배우자)</label>
             <input type="number" className={field} value={p.partner.savingsAccount?.count ?? ""}
               onChange={(e) => setP({ ...p, partner: { ...p.partner, savingsAccount: { type: p.partner.savingsAccount?.type ?? "주택청약종합저축", count: num(e.target.value), amount: p.partner.savingsAccount?.amount ?? 0 } } })} />
           </div>
@@ -223,12 +228,12 @@ export function ProfileForm() {
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={label}>금융자산</label>
-            <input type="number" className={field} value={p.assets.financial || ""}
+            <input type="text" inputMode="numeric" className={field} value={fmt(p.assets.financial)}
               onChange={(e) => setP({ ...p, assets: { ...p.assets, financial: num(e.target.value) } })} />
           </div>
           <div>
             <label className={label}>자동차가액</label>
-            <input type="number" className={field} value={p.assets.carValue || ""}
+            <input type="text" inputMode="numeric" className={field} value={fmt(p.assets.carValue)}
               onChange={(e) => setP({ ...p, assets: { ...p.assets, carValue: num(e.target.value) } })} />
           </div>
         </div>
@@ -255,9 +260,9 @@ export function ProfileForm() {
           data-testid="profile-since" />
       </div>
 
-      {/* 거주 — 여자친구(배우자) */}
+      {/* 거주 — 배우자(예비 포함) */}
       <div className={section}>
-        <h2 className="mb-1 text-sm font-semibold">여자친구 거주지</h2>
+        <h2 className="mb-1 text-sm font-semibold">배우자(예비배우자) 거주지</h2>
         <p className="mb-2 text-xs text-gray-500">해당지역 우선공급 판정에 본인 거주지와 함께 반영돼요.</p>
         <div className="grid grid-cols-2 gap-2">
           <div>

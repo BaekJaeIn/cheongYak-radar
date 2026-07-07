@@ -648,3 +648,27 @@
 **Context**: v3·v4 배포 완료 + 프로덕션 설정 복구 (AI 요약 부활 포함).
 
 ---
+
+## v5 소규모 개선 — 용어 공식화 + 금액 콤마 표기
+**Timestamp**: 2026-07-07T02:50:00Z
+**User Input**: "1. 우리 커플, 우리 부부란 말 대신 좀 더 공식적인 단어가 뭐가 있을까 2. 소득, 자산에 ,를 넣어서 단위를 구분하기 쉽게 해줘"
+**AI Response**: "(1) '우리 가구' 추천(기존 용어 가구 프로필·HouseholdProfile·청약 통계 용어와 일치; 대안 '세대'는 행정적) — page.tsx h1, layout.tsx title, analyze/page.tsx 문구 3곳 적용 + ProfileForm '여자친구 거주지'→'배우자 거주지'(소득·통장 섹션의 기존 '배우자' 라벨과 통일, 별도 고지). (2) ProfileForm 소득(본인/배우자)·자산(금융자산/자동차가액) 4개 필드를 type=number → text+inputMode=numeric으로 전환, toLocaleString 콤마 표시 + num() 파싱(콤마 제거 기존 로직 재사용). Trivial 변경 — 경량 진행(구현→검증→보고, 커밋은 요청 시)."
+**Context**: v5 소규모 개선. 구현 진행.
+
+---
+
+## v5 — 용어 확정(우리 가구) + 배우자(예비배우자) 라벨
+**Timestamp**: 2026-07-07T03:05:00Z
+**User Input**: "우리 가구 맞춤 추천으로 변경해주고 배우자라고 표시되어 있는 부분에는 배우자(예비배우자)라고 표시해줘"
+**AI Response**: "'우리 가구 맞춤 추천'은 직전 턴에 이미 적용됨(page.tsx h1·layout title) 확인. ProfileForm 표시 라벨 3곳 '배우자'→'배우자(예비배우자)' 변경(소득·청약통장 label 2곳 + 거주지 h2). 코드 식별자(partner)·타입 주석은 미변경. tsc·build 검증."
+**Context**: v5 마무리. 커밋은 사용자 요청 대기.
+
+---
+
+## v5 커밋·푸시
+**Timestamp**: 2026-07-07T03:15:00Z
+**User Input**: "커밋하고 푸시해줘"
+**AI Response**: "2961188 feat 프로필 UI 개선(용어 공식화+콤마 표기, 5 files) 커밋 후 푸시 — Vercel 자동 배포. Edge 재배포 불필요(프론트만 변경)."
+**Context**: v5 완료·배포.
+
+---
