@@ -64,15 +64,19 @@
 - 가구 프로필(소득·자산)은 LLM에 전송하지 않음 (BR-U7-3 유지)
 - 개방 가입에 따른 Gemini 쿼터 리스크는 C-13으로 수용됨 (Q2=B)
 
-## 4. Supabase 대시보드 설정 (수동)
-- [ ] Authentication → Sign In / Up → **Confirm email 끔** (개인용 — 메일 확인 생략)
-- [ ] Authentication → URL Configuration → **Site URL** = Vercel 프로덕션 URL (비밀번호 재설정 링크용)
+## 4. Supabase 대시보드 설정 (Management API로 적용 완료)
+- [x] **Confirm email 끔** — `mailer_autoconfirm=true`
+- [x] **Site URL** = https://cheong-yak-radar.vercel.app + uri_allow_list(프로덕션/**, localhost:3000/**)
 
-## 5. 롤아웃 체크리스트 (infrastructure-design §6 — 코드 승인 후)
-1. [ ] `supabase db push` — 0012 적용 (additive, 기존 anon 동작 유지)
-2. [ ] git push(Vercel 배포) + `supabase functions deploy collect`
-3. [ ] 로그인·프로필·추천 동작 확인 후 0013 적용(anon 차단)
-4. [ ] jiback96@naver.com 가입 → 레거시 프로필·푸시 구독 귀속 확인
-5. [ ] 대시보드 설정(§4) 확인
+## 5. 롤아웃 체크리스트 (2026-07-07 완료)
+1. [x] `supabase db push` — 0012 적용 (0013은 잠시 제외 후 복원)
+2. [x] git push(Vercel 배포, d8ab93d) + `supabase functions deploy collect`
+3. [x] 로그인 확인 후 0013 적용(anon 차단)
+4. [x] jiback96@naver.com 가입 → 프로필·푸시 구독 귀속 확인(orphan 0)
+5. [x] 인증 설정(§4) 적용
+
+## 6. 롤아웃 검증 중 발견·수정된 버그 (사후 기록)
+- **0014 (af220ed)**: `upsert_recommendations` — `returns table(notice_id…)`의 plpgsql 변수가 `on conflict (user_id, notice_id)` 컬럼 참조와 충돌(42702)해 호출이 항상 실패, Edge 회원별 격리 catch가 오류를 삼켜 추천 0건으로 보임 → `#variable_conflict use_column`으로 수정, 재계산 후 추천 7건 복원
+- **middleware src/ 이동 (b0220d7)**: `src/` 디렉터리 구조에서는 루트 `middleware.ts`가 무시됨 → 전체 잠금이 프로덕션에서 미동작. `src/middleware.ts`로 이동, 빌드 출력 `ƒ Middleware` 포함 확인. 교훈: 미들웨어 검증은 빌드 출력의 Middleware 줄 존재로 확인할 것
 
 **주의**: 0012의 recommendations 개편은 기존 추천 행을 삭제함 — 첫 재계산(프로필 귀속 후 자동/수동)까지 추천 피드가 비어 보일 수 있음. 가입(4단계) 후 프로필 저장 한 번이면 재계산 트리거로 복원됨.

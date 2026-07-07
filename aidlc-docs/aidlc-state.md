@@ -94,13 +94,14 @@
 - [x] Requirements Analysis (comprehensive) — Q1=A·Q2=B·Q3=B·Q4=A·Q5=B(jiback96@naver.com); requirements.md §15 FR-13~15 ✅ 승인
 - [x] U8 Functional+Infrastructure Design — D-1~D-9, BR-U8-1~12, C37~C40, 마이그레이션 0012/0013·RLS 매트릭스·롤아웃 순서 ✅ 승인
 - [x] U8 Code Generation PART 1 — 플랜 12 steps ✅ 승인
-- [ ] U8 Code Generation PART 2 — 구현 12/12 완료(0012·0013 / ssr 클라이언트·middleware·/login·로그아웃 / API 세션화 / Edge 회원화 / 북마크 DB화 / 테스트 14 신규; vitest 162, tsc clean, next build OK). **코드 승인 게이트 대기** → 롤아웃 5단계
+- [x] U8 Code Generation PART 2 — 구현 12/12 완료(0012·0013 / ssr 클라이언트·middleware·/login·로그아웃 / API 세션화 / Edge 회원화 / 북마크 DB화 / 테스트 14 신규; vitest 162, tsc clean, next build OK) ✅ 승인
+- [x] U8 롤아웃 — ① 0012 push ② 커밋 d8ab93d push+Edge deploy ③ 로그인 확인 후 0013 ④ jiback96@naver.com 가입·귀속(orphan 0) ⑤ autoconfirm ON·site_url·allow list. 검증 중 수정 2건: 0014 upsert_recommendations 변수충돌(af220ed, 추천 7건 복원)·middleware src/ 이동(b0220d7)
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: CONSTRUCTION (v6 Change Request)
-- **Current Stage**: v6 — U8 Code Generation PART 2 구현·검증 완료 (vitest 162, tsc clean, next build OK). **코드 승인 게이트 대기**.
-- **Next Stage**: 코드 승인 → 롤아웃 5단계(0012 db push → git push+Edge deploy → 로그인 확인 후 0013 → jiback96@naver.com 가입·귀속 → 대시보드 설정)
-- **Status**: ✅ v1~v5 완료·배포; v6 코드 완료(미배포 — 마이그레이션·Edge·Vercel 모두 롤아웃 대기)
+- **Lifecycle Phase**: CONSTRUCTION (v6 Change Request) — 완료
+- **Current Stage**: v6 롤아웃 완료 (2026-07-07). 프로덕션: https://cheong-yak-radar.vercel.app — 전체 잠금 확인(미로그인 307→/login, PWA 자산 통과), jiback96@naver.com 귀속·추천 7건 복원
+- **Next Stage**: 다음 변경요청 대기
+- **Status**: ✅ v1~v6 완료·배포 (vitest 162, tsc clean, next build OK; 마이그레이션 0014까지 적용)

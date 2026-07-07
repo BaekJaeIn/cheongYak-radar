@@ -768,3 +768,19 @@
 **Context**: v6 U8 롤아웃 ③④ — 로그인 게이트 통과.
 
 ---
+
+## U8 롤아웃 — 검증 중 버그 2건 발견·수정
+**Timestamp**: 2026-07-07T06:30:00Z
+**User Input**: (없음 — 롤아웃 검증 자동 진행)
+**AI Response**: "③ 0013 적용 완료(anon 차단). 귀속 검증: users=1, profile_claimed=1, orphan=0, push_claimed=1. 검증 중 버그 2건 발견·수정: (1) upsert_recommendations — returns table(notice_id…)의 plpgsql 변수가 on conflict 컬럼과 충돌(42702 ambiguous)해 호출 상시 실패, Edge 회원별 catch가 삼켜 추천 0건 → 0014 마이그레이션(#variable_conflict use_column) 적용, 재계산 후 추천 7건 복원 확인(커밋 af220ed). (2) middleware.ts가 루트에 있어 src/ 구조에서 Next.js가 무시 — 전체 잠금 미동작 → src/middleware.ts로 이동, 빌드에 ƒ Middleware 포함 확인(커밋 b0220d7). ⑤ Management API로 site_url=https://cheong-yak-radar.vercel.app + uri_allow_list(프로덕션/**·localhost:3000/**) 설정. Vercel 재배포 반영 감시 중."
+**Context**: v6 U8 롤아웃 — 0013·0014 적용, 미들웨어 수정 배포 대기.
+
+---
+
+## U8 롤아웃 완료 — v6 종료
+**Timestamp**: 2026-07-07T06:45:00Z
+**User Input**: (없음 — 배포 반영 확인 자동 진행)
+**AI Response**: "프로덕션 스모크 통과: /·/bookmarks·/settings → 307 /login, /login·/manifest.json·/sw.js → 200. 롤아웃 5단계 전체 완료(0012→배포→0013→가입·귀속→autoconfirm·site_url). v6 완료 — 커밋 d8ab93d(U8 본체)·af220ed(0014)·b0220d7(middleware src/)."
+**Context**: v6 U8 — 롤아웃 종료, 운영 전환.
+
+---
