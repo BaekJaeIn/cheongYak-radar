@@ -13,6 +13,7 @@ import { upsertNotices } from "./upsert.ts";
 import { summarizeMissing } from "./summarize.ts";
 import { recompute, type RecomputeResult } from "./recommend/service.ts";
 import { dispatch, dispatchTest } from "./push.ts";
+import { analyzePdf } from "./analyze.ts";
 
 interface SourceStat {
   source: string;
@@ -129,10 +130,22 @@ async function triggerPush(client: SupabaseClient, newIds: string[]): Promise<vo
 
 Deno.serve(async (req: Request) => {
   try {
-    // { action: "recompute" } → 수집 생략, 재계산만 (프로필 변경 트리거)
-    let action: string | undefined;
+    // POST body는 한 번만 읽는다 — action 외에 analyze 페이로드(pdfBase64)도 여기서 수신
+    let body: { action?: string; pdfBase64?: string; mimeType?: string } | undefined;
     if (req.method === "POST") {
-      action = await req.json().then((b) => b?.action).catch(() => undefined);
+      body = await req.json().catch(() => undefined);
+    }
+    const action = body?.action;
+    // { action: "analyze", pdfBase64, mimeType } → PDF 자격판정 (U7, FR-12). 미저장.
+    if (action === "analyze") {
+      const outcome = await analyzePdf(
+        serviceClient(),
+        body?.pdfBase64 ?? "",
+        body?.mimeType ?? "application/pdf",
+      );
+      return new Response(JSON.stringify(outcome), {
+        headers: { "content-type": "application/json" },
+      });
     }
     // { action: "test-push" } → 신규추천 무관, 전체 구독자에 테스트 알림 무조건 발송
     if (action === "test-push") {

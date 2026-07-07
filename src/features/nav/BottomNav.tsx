@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 const TABS = [
   { href: "/", label: "추천", testid: "tab-feed" },
   { href: "/bookmarks", label: "관심", testid: "tab-bookmarks" },
+  { href: "/analyze", label: "공고분석", testid: "tab-analyze" },
   { href: "/settings", label: "내 프로필", testid: "tab-settings" },
 ];
 
