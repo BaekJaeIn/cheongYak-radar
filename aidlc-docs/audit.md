@@ -752,3 +752,19 @@
 **Context**: v6 U8 — 코드 승인 게이트 통과; 롤아웃 진행.
 
 ---
+
+## U8 롤아웃 진행 (①②⑤ 일부 완료)
+**Timestamp**: 2026-07-07T05:55:00Z
+**User Input**: "계속해줘" (Edge 스모크 테스트 curl은 거부 — 건너뜀)
+**AI Response**: "롤아웃 진행: ① 0012 db push 완료(0013은 잠시 제외 후 복원 — 미적용 유지) ② 커밋 d8ab93d git push(Vercel 자동 배포) + supabase functions deploy collect 완료 ⑤ Management API로 mailer_autoconfirm=true(이메일 확인 끔) 적용; Site URL은 프로덕션 URL 미확인으로 보류(localhost:3000 상태). 잔여: 사용자 가입(jiback96@naver.com)·로그인/귀속 확인 → ③ 0013 적용 → Site URL 설정."
+**Context**: v6 U8 롤아웃 — 사용자 가입·확인 대기.
+
+---
+
+## U8 롤아웃 — 로그인 확인
+**Timestamp**: 2026-07-07T06:05:00Z
+**User Input**: "로그인 잘돼"
+**AI Response**: "로그인 확인 접수. 귀속(household_profile/push_subscriptions user_id) DB 검증 → ③ 0013 적용(anon 차단) → Site URL 설정 진행."
+**Context**: v6 U8 롤아웃 ③④ — 로그인 게이트 통과.
+
+---
