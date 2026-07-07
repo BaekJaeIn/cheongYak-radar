@@ -14,6 +14,7 @@ const TABS = [
 export function BottomNav() {
   const router = useRouter();
   const pathname = usePathname();
+  if (pathname === "/login") return null; // 로그인 화면은 탭 숨김 (v6)
   return (
     <nav className="fixed bottom-0 left-0 right-0 border-t bg-white">
       <div className="mx-auto flex max-w-md">

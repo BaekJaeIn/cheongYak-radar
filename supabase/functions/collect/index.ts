@@ -97,7 +97,7 @@ export async function run(): Promise<CollectionResult> {
 
   // U5 연계: **신규 추천** 공고 푸시 (US-6.7, BR-U6-15)
   if (rec.newIds.length > 0) {
-    await triggerPush(client, rec.newIds);
+    await triggerPush(client, rec.newIdsByUser);
   }
 
   const result: CollectionResult = {
@@ -113,35 +113,42 @@ export async function run(): Promise<CollectionResult> {
   return result;
 }
 
-/** 프로필 변경 등으로 재계산만 수행 (수집 생략). Route Handler가 호출. (US-6.2) */
-export async function runRecomputeOnly(): Promise<RecomputeResult> {
+/** 프로필 변경 등으로 재계산만 수행 (수집 생략). Route Handler·DB 트리거가 호출. (US-6.2, v6 D-5) */
+export async function runRecomputeOnly(userId?: string): Promise<RecomputeResult> {
   const client = serviceClient();
-  const rec = await recompute(client);
-  if (rec.newIds.length > 0) await triggerPush(client, rec.newIds);
+  const rec = await recompute(client, userId);
+  if (rec.newIds.length > 0) await triggerPush(client, rec.newIdsByUser);
   console.log("[collect] recompute-only:", JSON.stringify(rec));
   return rec;
 }
 
-/** U5 PushDispatcher — 신규 추천 Web Push 발송 (US-6.7). */
-async function triggerPush(client: SupabaseClient, newIds: string[]): Promise<void> {
-  const r = await dispatch(client, newIds);
-  console.log(`[collect] push 신규 추천 ${newIds.length}건 → sent=${r.sent} failed=${r.failed}`);
+/** U5 PushDispatcher — 회원별 신규 추천 Web Push 발송 (US-6.7, v6 BR-U8-7). */
+async function triggerPush(
+  client: SupabaseClient,
+  newIdsByUser: Record<string, string[]>,
+): Promise<void> {
+  const total = Object.values(newIdsByUser).flat().length;
+  const r = await dispatch(client, newIdsByUser);
+  console.log(`[collect] push 신규 추천 ${total}건 → sent=${r.sent} failed=${r.failed}`);
 }
 
 Deno.serve(async (req: Request) => {
   try {
-    // POST body는 한 번만 읽는다 — action 외에 analyze 페이로드(pdfBase64)도 여기서 수신
-    let body: { action?: string; pdfBase64?: string; mimeType?: string } | undefined;
+    // POST body는 한 번만 읽는다 — action 외에 analyze 페이로드(pdfBase64)·userId도 여기서 수신
+    let body:
+      | { action?: string; pdfBase64?: string; mimeType?: string; userId?: string }
+      | undefined;
     if (req.method === "POST") {
       body = await req.json().catch(() => undefined);
     }
     const action = body?.action;
-    // { action: "analyze", pdfBase64, mimeType } → PDF 자격판정 (U7, FR-12). 미저장.
+    // { action: "analyze", pdfBase64, mimeType, userId } → PDF 자격판정 (U7 FR-12 + v6 BR-U8-9). 미저장.
     if (action === "analyze") {
       const outcome = await analyzePdf(
         serviceClient(),
         body?.pdfBase64 ?? "",
         body?.mimeType ?? "application/pdf",
+        body?.userId,
       );
       return new Response(JSON.stringify(outcome), {
         headers: { "content-type": "application/json" },
@@ -154,7 +161,7 @@ Deno.serve(async (req: Request) => {
         headers: { "content-type": "application/json" },
       });
     }
-    const result = action === "recompute" ? await runRecomputeOnly() : await run();
+    const result = action === "recompute" ? await runRecomputeOnly(body?.userId) : await run();
     return new Response(JSON.stringify(result), {
       headers: { "content-type": "application/json" },
     });

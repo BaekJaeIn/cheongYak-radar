@@ -680,3 +680,75 @@
 **Context**: v4 공고분석 프로덕션 버그 수정·배포 완료.
 
 ---
+
+## 공고분석 토큰·비용 문의
+**Timestamp**: 2026-07-07T05:10:00Z
+**User Input**: "저 공고 기준으로 제미나이가 토큰 얼마나 소비하고 그러면 돈이 어느정도 들어?" / "계속 해줘"
+**AI Response**: "실측 — PDF는 페이지당 정확히 258토큰(usageMetadata DOCUMENT modality로 확인), 추출 프롬프트 424토큰(countTokens 실측), 출력 JSON ~250토큰. 부천원종 공고(21페이지) 1회 = 입력 ~5,850 + 출력 ~250 ≈ 6,100토큰. gemini-2.5-flash 유료 단가(공식 요금표 확인: 입력 $0.30/1M, 출력 $2.50/1M·thinking 포함) 기준 1회 ≈ $0.0024(약 3원). AI Studio 무료 티어 키면 한도 내 0원. 수정 전 설정은 thinking ~1,900토큰이 출력 요금으로 과금되며 실패까지 하던 구조였음을 병기."
+**Context**: v4 운영 Q&A — 비용 분석.
+
+---
+
+## v6 Change Request — 회원가입/로그인 + 회원별 데이터 관리
+**Timestamp**: 2026-07-07T05:40:00Z
+**User Input**: "이제 회원가입 및 로그인 창을 만들어서 회원별로 관리하고 싶어. 지금 입력한 데이터는 내 계정을 만들어서 거기에 옮기고 싶어. 내가 만들 아이디랑 비밀번호 필요하면 말해줄게"
+**AI Response**: "v6 변경요청 시작 — Requirements Analysis (standard~comprehensive: 단일 가구 전제(C-7) 해제, DB 스키마·RLS·recompute·push·API 전반 영향). 보안 안내: 비밀번호는 공유 불필요(가입 UI에서 본인 입력, Supabase Auth 해시 저장). 확인 질문 5건 생성(requirements-change-v6-auth-questions.md: 인증 방식/가입 제한/회원별 데이터 범위/비로그인 접근/기존 데이터 이전). 질문 게이트 대기."
+**Context**: v6 Change Request — Requirements Analysis 질문 게이트.
+
+---
+
+## v6 Requirements Analysis — 답변 수신 / requirements.md §15 반영
+**Timestamp**: 2026-07-07T06:00:00Z
+**User Input**: "완료. Q5 : jiback96@naver.com" (requirements-change-v6-auth-questions.md: Q1=A, Q2=B, Q3=B, Q4=A, Q5=B)
+**AI Response**: "답변 분석 — Q1=A(이메일+비밀번호 Supabase Auth), Q2=B(가입 공개, 쿼터 리스크 수용 명시), Q3=B(프로필·추천·푸시+북마크 DB 이전), Q4=A(전체 잠금), Q5=B(jiback96@naver.com 가입 시 기존 데이터 귀속). 모순 없음 — Q2 리스크는 C-13으로 수용 기록. requirements.md §15 v6 추가: C-12~C-14, FR-13(가입/로그인/전체잠금/재설정), FR-14(회원별 프로필·추천·푸시·북마크+localStorage 병합·분석), FR-15(지정 이메일 귀속), A-8~A-10, 코드 영향(U2 스키마·RLS 개편, 신규 U8 Auth, U6·U5 회원별 전환, U3/U4/U7 세션 기반, Edge 회원별). 실행 계획 제안 포함 승인 게이트 제시, 대기."
+**Context**: v6 Change Request — Requirements Analysis 완료; 승인 게이트.
+
+---
+
+## v6 승인 / U8 Functional+Infrastructure Design 완료
+**Timestamp**: 2026-07-07T06:30:00Z
+**User Input**: "승인"
+**AI Response**: "v6 요구사항 승인 기록. U8 설계 실행(통합 산출, v2 consolidated 선례) — 코드 분석(0001/0002/0004/0005/0011 RLS·RPC·트리거, push.ts sendToAll, bookmarks localStorage store, feed repository anon read, subscribe route service_role, package.json). 설계 결정 D-1~D-9: @supabase/ssr 쿠키 세션+미들웨어 전체 잠금(PWA 자산 예외), user_id 축 스키마 개편(recommendations 재생성, profile CHECK 제거), RLS 본인 행(anon 제거는 0013로 분리 — 전환 안전), auth.users 트리거 귀속(jiback96@naver.com), 회원 루프 recompute+회원별 푸시, 북마크 DB+1회 병합, API 3종 세션 가드+analyze userId, 이메일 확인 끔(기본값, 게이트 고지). 산출물: functional-design 3종(E-U8, BR-U8-1~12, C37~C40+개정) + infrastructure-design(0012/0013, RLS 매트릭스, 대시보드 설정, 롤아웃 5단계, 리스크). REVIEW REQUIRED 제시, 대기."
+**Context**: v6 U8 — 설계 완료; 승인 게이트 (다음: Code Generation plan).
+
+---
+
+## U8 설계 승인 / Code Generation PART 1 (플랜)
+**Timestamp**: 2026-07-07T06:50:00Z
+**User Input**: "승인"
+**AI Response**: "U8 설계 승인 기록(state [x], D-9 이메일 확인 끔 기본값 포함). Code Generation PART 1 — prune_recommendations(keep_ids) RPC 시그니처 확인 후 U8-auth-code-generation-plan.md 생성: 12 steps (0012 마이그레이션 → 0013 → @supabase/ssr 클라이언트 → middleware → /login → API 세션화 → Edge 회원화 → 북마크 DB화 → 로그아웃 → 테스트 → 요약 → 검증) + 롤아웃 5단계 별도. 플랜 승인 게이트 제시, 대기."
+**Context**: v6 U8 — Code Generation PART 1 완료; 플랜 승인 게이트.
+
+---
+
+## U8 Code Generation 플랜 승인 / PART 2 시작
+**Timestamp**: 2026-07-07T07:00:00Z
+**User Input**: "승인"
+**AI Response**: "U8 code generation plan 승인 기록. PART 2 실행 — 12 steps 순차 구현 시작."
+**Context**: v6 U8 — Code Generation PART 2 진행.
+
+---
+
+## U8 Code Generation PART 2 — 중간 체크포인트 (Step 1~7 완료)
+**Timestamp**: 2026-07-07T07:40:00Z
+**User Input**: "/compact" (컨텍스트 압축 요청 — 작업 체크포인트 후 계속)
+**AI Response**: "Step 1~7 완료: 0012_multi_user.sql(프로필/추천/푸시 user_id·bookmarks·RLS·귀속 트리거·0011 개정)·0013_lock_anon.sql, @supabase/ssr 도입+browser/server/session 클라이언트, middleware.ts 전체 잠금(정적 자산 예외), /login+LoginForm(3모드)+errors.ts, API 3종 세션화(profile user_id RPC·subscribe user_id·analyze userId 전달)+page.tsx 관심지역 세션화, Edge 회원화(service.ts 회원 루프+collectNewIds+newIdsByUser, push.ts 회원별 dispatch, analyze.ts userId, index.ts 전달). 잔여: Step 8(북마크 DB화) 9(로그아웃) 10(테스트) 11(요약) 12(검증). 플랜 체크박스 1~7 [x]."
+**Context**: v6 U8 Code Generation PART 2 진행 중 — 컴파일 일관 상태로 체크포인트.
+
+---
+
+## U8 Code Generation PART 2 — 완료 (Step 8~12)
+**Timestamp**: 2026-07-07T05:40:00Z
+**User Input**: "계속"
+**AI Response**: "Step 8~12 완료. Step 8 북마크 DB화: repository.ts(listBookmarkIds/isBookmarked/toggleBookmark/mergeLocalOnce + 순수 planMergeRows — 존재 공고만 걸러 FK 위반 방지, DO NOTHING upsert, 성공 시에만 localStorage clear), store.ts 병합 소스+순수 유틸로 축소(clear 추가), BookmarkButton 비동기 DB 토글(busy 가드), bookmarks/page.tsx merge→list→notices .in. Step 9 로그아웃: LogoutButton(계정 이메일 표시+signOut→/login) settings에 배치, /login에서 BottomNav 숨김. Step 10 테스트 신규 14개: errors 매핑 7, planMergeRows 3, collectNewIds 2, profile RPC user_id/p_user_id 스코프 2(mock client). Step 11 code-summary.md(파일 인벤토리·보안 유지사항·대시보드 설정·롤아웃 체크리스트·추천 행 삭제 주의). Step 12 검증: vitest 162/162 통과, tsc --noEmit 무오류, next build 성공(/login 라우트 포함). 플랜 체크박스 8~12 [x], aidlc-state.md 갱신. 코드 승인 게이트 제시, 대기."
+**Context**: v6 U8 — Code Generation PART 2 완료; 코드 승인 게이트. 롤아웃(0012→배포→0013→가입 귀속→대시보드)은 승인 후.
+
+---
+
+## U8 코드 승인 / 롤아웃 시작
+**Timestamp**: 2026-07-07T05:45:00Z
+**User Input**: "승인"
+**AI Response**: "U8 코드 승인 기록. 롤아웃 5단계 시작: ① 0012 db push(0013은 보류) ② 커밋·git push(Vercel)+Edge deploy ③ 로그인 확인 후 0013 ④ jiback96@naver.com 가입·귀속 확인 ⑤ 대시보드 설정."
+**Context**: v6 U8 — 코드 승인 게이트 통과; 롤아웃 진행.
+
+---

@@ -202,12 +202,16 @@ async function extractFromPdf(
   return text;
 }
 
-/** PDF 업로드 1건 분석: 추출 → 프로필 조회 → 판정. (C36) */
+/** PDF 업로드 1건 분석: 추출 → 요청 회원 프로필 조회 → 판정. (C36, v6 BR-U8-9) */
 export async function analyzePdf(
   client: SupabaseClient,
   pdfBase64: string,
   mimeType: string,
+  userId?: string,
 ): Promise<AnalyzeOutcome> {
+  if (!userId) {
+    return { ok: false, code: "profileMissing", message: "로그인이 필요해요." };
+  }
   const apiKey = Deno.env.get("GEMINI_API_KEY");
   if (!apiKey) {
     return { ok: false, code: "geminiUnavailable", message: "분석 서비스가 설정되지 않았어요." };
@@ -231,7 +235,7 @@ export async function analyzePdf(
   const { data: profRow, error: profErr } = await client
     .from("household_profile")
     .select("profile")
-    .eq("id", 1)
+    .eq("user_id", userId)
     .maybeSingle();
   if (profErr) throw new Error(`프로필 조회 실패: ${profErr.message}`);
   if (!profRow?.profile) {

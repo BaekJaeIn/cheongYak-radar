@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getProfile, saveProfile } from "@/features/profile/repository";
+import { getSessionUser } from "@/lib/supabase/session";
 import type { HouseholdProfile } from "@/lib/types/profile";
 
 export const runtime = "nodejs";
@@ -10,7 +11,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const profile = await getProfile();
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "로그인이 필요해요." }, { status: 401 });
+    const profile = await getProfile(user.id);
     return NextResponse.json({ profile });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
@@ -19,11 +22,13 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: "로그인이 필요해요." }, { status: 401 });
     const body = (await req.json()) as HouseholdProfile;
-    const profile = await saveProfile(body);
-    // US-6.2: 프로필 변경 → collect Edge Function recompute 액션 트리거.
+    const profile = await saveProfile(user.id, body);
+    // US-6.2: 프로필 변경 → collect Edge Function recompute 액션 트리거 (본인만, BR-U8-5).
     // 결과를 응답에 담아 클라가 갱신 성공/실패를 인지(이전엔 비차단이라 "변경 안 됨"처럼 보임).
-    const recompute = await triggerRecompute();
+    const recompute = await triggerRecompute(user.id);
     // 추천 갱신 후 피드/관심 페이지 서버 캐시 무효화 (클라는 router.refresh로 보강).
     revalidatePath("/");
     revalidatePath("/bookmarks");
@@ -54,8 +59,8 @@ function functionsBaseUrl(): string | null {
   }
 }
 
-/** collect Edge Function에 재계산만 요청(로직 중복 방지, infra §4). 결과/실패를 구조화 반환. */
-async function triggerRecompute(): Promise<RecomputeStatus> {
+/** collect Edge Function에 해당 회원 재계산만 요청(로직 중복 방지, infra §4). 결과/실패를 구조화 반환. */
+async function triggerRecompute(userId: string): Promise<RecomputeStatus> {
   const base = functionsBaseUrl();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !key) {
@@ -65,7 +70,7 @@ async function triggerRecompute(): Promise<RecomputeStatus> {
     const res = await fetch(`${base}/functions/v1/collect`, {
       method: "POST",
       headers: { "content-type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ action: "recompute" }),
+      body: JSON.stringify({ action: "recompute", userId }),
     });
     if (!res.ok) {
       return { ok: false, error: `추천 갱신 실패(HTTP ${res.status})` };

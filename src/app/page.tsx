@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getRecommendationFeed } from "@/features/recommendations/repository";
 import { fromSearchParams } from "@/features/recommendations/feed-filter";
 import { getProfile } from "@/features/profile/repository";
+import { getSessionUser } from "@/lib/supabase/session";
 import { RecommendationFeed } from "@/features/feed/RecommendationFeed";
 import { FeedFilterBar } from "@/features/feed/FeedFilterBar";
 import { InstallBanner } from "@/features/pwa/InstallBanner";
@@ -16,10 +17,11 @@ export default async function FeedPage({ searchParams }: { searchParams: SP }) {
   const limit = Math.max(20, Number(searchParams.limit) || 20);
   const today = todayKST();
 
-  // 프로필의 관심지역을 읽어 읽기 단계에서도 지역 필터 적용(먼 경기 제외, 재계산 불필요).
+  // 로그인 회원 프로필의 관심지역을 읽어 읽기 단계에서도 지역 필터 적용 (v6 회원별).
   let regions: string[] = [];
   try {
-    const profile = await getProfile();
+    const user = await getSessionUser();
+    const profile = user ? await getProfile(user.id) : null;
     regions = profile?.preferences?.regions ?? [];
   } catch {
     regions = [];

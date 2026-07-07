@@ -90,12 +90,17 @@
 - [x] Requirements Analysis (standard) — Q1=A(PDF 직송), Q2=A(추출+matcher), Q3=A(미저장); requirements.md §14 FR-12 ✅ 승인
 - [x] U7 Functional Design — D-1(Edge action "analyze") · D-2(JSON 강제 추출) · D-3(합성 NoticeInput→evaluate); 산출물 4종 ✅ 승인
 - [x] U7 Code Generation — Edge analyze.ts+index 분기+테스트 8 / /api/analyze / features·app analyze UI+테스트 4 / BottomNav 4탭 (vitest 148, tsc clean, next build OK). ✅ 승인 (2026-07-07)
+**v6 변경요청 (Change Request — 회원가입/로그인·회원별 데이터, 2026-07-07)**
+- [x] Requirements Analysis (comprehensive) — Q1=A·Q2=B·Q3=B·Q4=A·Q5=B(jiback96@naver.com); requirements.md §15 FR-13~15 ✅ 승인
+- [x] U8 Functional+Infrastructure Design — D-1~D-9, BR-U8-1~12, C37~C40, 마이그레이션 0012/0013·RLS 매트릭스·롤아웃 순서 ✅ 승인
+- [x] U8 Code Generation PART 1 — 플랜 12 steps ✅ 승인
+- [ ] U8 Code Generation PART 2 — 구현 12/12 완료(0012·0013 / ssr 클라이언트·middleware·/login·로그아웃 / API 세션화 / Edge 회원화 / 북마크 DB화 / 테스트 14 신규; vitest 162, tsc clean, next build OK). **코드 승인 게이트 대기** → 롤아웃 5단계
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: CONSTRUCTION 완료 (v4까지)
-- **Current Stage**: v3(캘린더 추가)·v4(공고분석 탭) ✅ 모두 완료·승인 (2026-07-07).
-- **Next Stage**: 배포 — 커밋/푸시(Vercel) + `supabase functions deploy collect`(analyze action 반영). 이후 신규 요청 대기.
-- **Status**: ✅ v1~v4 개발 완료 (vitest 148, tsc clean, next build OK)
+- **Lifecycle Phase**: CONSTRUCTION (v6 Change Request)
+- **Current Stage**: v6 — U8 Code Generation PART 2 구현·검증 완료 (vitest 162, tsc clean, next build OK). **코드 승인 게이트 대기**.
+- **Next Stage**: 코드 승인 → 롤아웃 5단계(0012 db push → git push+Edge deploy → 로그인 확인 후 0013 → jiback96@naver.com 가입·귀속 → 대시보드 설정)
+- **Status**: ✅ v1~v5 완료·배포; v6 코드 완료(미배포 — 마이그레이션·Edge·Vercel 모두 롤아웃 대기)

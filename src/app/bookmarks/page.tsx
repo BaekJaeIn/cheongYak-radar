@@ -1,9 +1,9 @@
 "use client";
-// 관심 공고 `/bookmarks` (C22, US-5.2). localStorage ids → anon 조회, 마감정렬·만료흐림.
+// 관심 공고 `/bookmarks` (C22, US-5.2). v6: DB 북마크 + 레거시 로컬 1회 병합 (C40, BR-U8-8).
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Notice } from "@/lib/types/notice";
-import { BookmarkStore } from "@/features/bookmarks/store";
+import { listBookmarkIds, mergeLocalOnce } from "@/features/bookmarks/repository";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { ProviderBadge, KindBadge } from "@/features/feed/badges";
 import { DdayBadge } from "@/features/feed/DdayBadge";
@@ -19,21 +19,23 @@ export default function BookmarksPage() {
   const today = todayKST();
 
   useEffect(() => {
-    const ids = BookmarkStore.list();
-    if (ids.length === 0) {
-      setItems([]);
-      return;
-    }
-    getBrowserClient()
-      .from("notices")
-      .select("*")
-      .in("id", ids)
-      .then(({ data }) => {
+    (async () => {
+      try {
+        await mergeLocalOnce(); // 레거시 localStorage → DB 1회 병합
+        const ids = await listBookmarkIds();
+        if (ids.length === 0) {
+          setItems([]);
+          return;
+        }
+        const { data } = await getBrowserClient().from("notices").select("*").in("id", ids);
         const list = ((data ?? []) as Notice[]).sort((a, b) =>
           (a.apply_end ?? "9999-12-31") < (b.apply_end ?? "9999-12-31") ? -1 : 1,
         );
         setItems(list);
-      });
+      } catch {
+        setItems([]);
+      }
+    })();
   }, []);
 
   if (items === null) return <p className="text-sm text-gray-500">불러오는 중…</p>;

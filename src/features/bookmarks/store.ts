@@ -1,4 +1,5 @@
-// 북마크 저장 (localStorage, BR-U5-1). 순수 헬퍼 + 브라우저 래퍼.
+// 북마크 localStorage 저장 (BR-U5-1). v6부터 DB(repository.ts)가 주 저장소 —
+// 이 모듈은 레거시 병합(mergeLocalOnce) 소스 + 순수 유틸로만 유지 (BR-U8-8).
 const KEY = "cheongyak:bookmarks";
 
 /** 순수: 목록 파싱(방어적). */
@@ -47,5 +48,9 @@ export const BookmarkStore = {
     const next = toggleInList(read(), id);
     write(next);
     return next.includes(id);
+  },
+  /** DB 병합 성공 후 로컬 비우기 (BR-U8-8). */
+  clear(): void {
+    write([]);
   },
 };

@@ -84,63 +84,67 @@ export async function dispatchTest(client: SupabaseClient): Promise<{ sent: numb
   return sendToAll(client, payload);
 }
 
-/** 신규추천 newIds가 있으면 전체 구독자에 Web Push 발송. 실패/만료는 개별 정리. */
-export async function dispatch(client: SupabaseClient, newIds: string[]): Promise<{ sent: number; failed: number }> {
-  if (newIds.length === 0) return { sent: 0, failed: 0 };
+/** 회원별 신규추천을 그 회원의 구독 기기에만 발송 (v6 BR-U8-7). 실패/만료는 개별 정리. */
+export async function dispatch(
+  client: SupabaseClient,
+  newIdsByUser: Record<string, string[]>,
+): Promise<{ sent: number; failed: number }> {
+  const userIds = Object.keys(newIdsByUser).filter((u) => newIdsByUser[u].length > 0);
+  if (userIds.length === 0) return { sent: 0, failed: 0 };
   if (!configureVapid()) return { sent: 0, failed: 0 };
 
-  // 신규 추천 공고 제목 조회 (알림 본문/클릭 이동용). 과다 알림 방지 상한.
+  // 신규 추천 공고 제목 일괄 조회 (알림 본문/클릭 이동용). 회원당 과다 알림 방지 상한.
   const CAP = 5;
-  const ids = newIds.slice(0, CAP);
+  const allIds = [...new Set(Object.values(newIdsByUser).flat())];
   const { data: noticeRows } = await client
     .from("notices")
     .select("id, title")
-    .in("id", ids);
+    .in("id", allIds);
   const titleById = new Map(
     ((noticeRows ?? []) as { id: string; title: string }[]).map((n) => [n.id, n.title]),
   );
-
-  // 공고별 payload: 제목 노출 + 클릭 시 해당 공고 상세로 이동.
-  const payloads = ids.map((id) =>
+  const payloadOf = (id: string) =>
     JSON.stringify({
       title: `🏠 ${titleById.get(id) ?? "새 맞춤 청약 공고"}`,
       body: "새로 추천된 청약 공고예요 · 눌러서 상세 보기",
       url: `/notice/${encodeURIComponent(id)}`,
-    })
-  );
-
-  const { data, error } = await client
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth");
-  if (error) {
-    console.warn(`[push] 구독 조회 실패: ${error.message}`);
-    return { sent: 0, failed: 0 };
-  }
+    });
 
   let sent = 0;
   let failed = 0;
-  for (const s of (data ?? []) as SubRow[]) {
-    let dead = false;
-    for (const payload of payloads) {
-      if (dead) break;
-      try {
-        await webpush.sendNotification(
-          { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          payload,
-        );
-        sent++;
-      } catch (e) {
-        failed++;
-        const code = (e as { statusCode?: number }).statusCode;
-        if (code === 404 || code === 410) {
-          await client.from("push_subscriptions").delete().eq("id", s.id);
-          dead = true; // 만료 구독 — 이 구독에 더 보내지 않음
-        } else {
-          console.warn(`[push] 발송 실패: ${(e as Error).message}`);
+  for (const userId of userIds) {
+    const payloads = newIdsByUser[userId].slice(0, CAP).map(payloadOf);
+    const { data, error } = await client
+      .from("push_subscriptions")
+      .select("id, endpoint, p256dh, auth")
+      .eq("user_id", userId);
+    if (error) {
+      console.warn(`[push] 구독 조회 실패 ${userId}: ${error.message}`);
+      continue;
+    }
+    for (const s of (data ?? []) as SubRow[]) {
+      let dead = false;
+      for (const payload of payloads) {
+        if (dead) break;
+        try {
+          await webpush.sendNotification(
+            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+            payload,
+          );
+          sent++;
+        } catch (e) {
+          failed++;
+          const code = (e as { statusCode?: number }).statusCode;
+          if (code === 404 || code === 410) {
+            await client.from("push_subscriptions").delete().eq("id", s.id);
+            dead = true; // 만료 구독 — 이 구독에 더 보내지 않음
+          } else {
+            console.warn(`[push] 발송 실패: ${(e as Error).message}`);
+          }
         }
       }
     }
   }
-  console.log(`[push] notices=${ids.length} sent=${sent} failed=${failed}`);
+  console.log(`[push] users=${userIds.length} sent=${sent} failed=${failed}`);
   return { sent, failed };
 }

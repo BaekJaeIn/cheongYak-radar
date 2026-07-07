@@ -2,6 +2,7 @@
 // service_role은 서버에서만 사용(NFR-3, BR-U7-9). 결과·PDF 미저장 (BR-U7-6).
 import { NextResponse } from "next/server";
 import { validatePdfFile } from "@/features/analyze/validate";
+import { getSessionUser } from "@/lib/supabase/session";
 import type { AnalyzeErrorCode, AnalyzeOutcome } from "@/features/analyze/types";
 
 export const runtime = "nodejs";
@@ -10,6 +11,9 @@ export const maxDuration = 60; // Gemini PDF 추출 지연 대비 (Vercel 기본
 
 export async function POST(req: Request) {
   try {
+    // 판정은 로그인 회원의 프로필로 (v6 FR-14.5, BR-U8-9)
+    const user = await getSessionUser();
+    if (!user) return fail("edgeError", "로그인이 필요해요.", 401);
     const form = await req.formData();
     const file = form.get("file");
     if (!(file instanceof File)) {
@@ -30,7 +34,7 @@ export async function POST(req: Request) {
     const res = await fetch(`${base}/functions/v1/collect`, {
       method: "POST",
       headers: { "content-type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ action: "analyze", pdfBase64, mimeType: "application/pdf" }),
+      body: JSON.stringify({ action: "analyze", pdfBase64, mimeType: "application/pdf", userId: user.id }),
     });
     if (!res.ok) {
       return fail("edgeError", "분석 실패 — 잠시 후 다시 시도해 주세요.", 502); // BR-U7-8
