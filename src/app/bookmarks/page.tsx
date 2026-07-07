@@ -64,7 +64,7 @@ export default function BookmarksPage() {
                 </span>
               </div>
               <h2 className="text-sm font-semibold">
-                <Link href={`/notice/${encodeURIComponent(n.id)}`} className="hover:underline">
+                <Link href={`/notice/${encodeURIComponent(n.id)}`} replace className="hover:underline">
                   {n.title}
                 </Link>
               </h2>

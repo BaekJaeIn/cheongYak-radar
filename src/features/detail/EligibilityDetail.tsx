@@ -31,7 +31,7 @@ export function EligibilityDetail({
       ) : (
         <p className="text-sm text-gray-600">
           현재 추천 대상이 아니에요.{" "}
-          <Link href="/settings" className="text-blue-700 underline">
+          <Link href="/settings" replace className="text-blue-700 underline">
             내 프로필
           </Link>
           을 확인해 보세요.

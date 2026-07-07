@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { RegisterSW } from "@/features/pwa/RegisterSW";
+import { BackExitGuard } from "@/features/pwa/BackExitGuard";
 import { NotifyToggle } from "@/features/notifications/NotifyToggle";
 import { BottomNav } from "@/features/nav/BottomNav";
 
@@ -43,9 +44,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen pb-16">
         <RegisterSW />
+        <BackExitGuard />
         <header className="sticky top-0 z-10 border-b bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-            <Link href="/" className="text-lg font-bold text-blue-700" data-testid="nav-home">
+            <Link
+              href="/"
+              replace
+              className="text-lg font-bold text-blue-700"
+              data-testid="nav-home"
+            >
               청약레이더
             </Link>
             <div className="flex items-center gap-2">

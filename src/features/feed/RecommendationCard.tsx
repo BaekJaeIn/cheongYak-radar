@@ -27,7 +27,7 @@ export function RecommendationCard({ item, today }: { item: FeedItem; today: str
       </div>
 
       <h2 className="text-sm font-semibold leading-snug">
-        <Link href={`/notice/${encodeURIComponent(notice.id)}`} className="hover:underline">
+        <Link href={`/notice/${encodeURIComponent(notice.id)}`} replace className="hover:underline">
           {notice.title}
         </Link>
       </h2>

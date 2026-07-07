@@ -330,7 +330,7 @@ export function ProfileForm() {
           type="button"
           onClick={() => {
             router.refresh(); // 캐시된 추천 페이지 무효화 → 변경된 관심지역 즉시 반영
-            router.push("/");
+            router.replace("/");
           }}
           className="rounded-lg border border-blue-200 bg-blue-50 py-2 text-center text-sm font-medium text-blue-700"
           data-testid="profile-goto-feed"

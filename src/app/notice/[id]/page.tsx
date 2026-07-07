@@ -27,7 +27,7 @@ export default async function NoticeDetailPage({ params }: { params: { id: strin
 
   return (
     <div className="flex flex-col gap-3">
-      <Link href="/" className="text-xs text-blue-700" data-testid="back-to-feed">
+      <Link href="/" replace className="text-xs text-blue-700" data-testid="back-to-feed">
         ← 추천으로
       </Link>
       <DetailHeader notice={notice} rec={rec} today={today} />

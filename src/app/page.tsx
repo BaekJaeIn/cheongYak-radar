@@ -46,7 +46,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SP }) {
       <h1 className="mb-1 text-base font-bold">우리 가구 맞춤 추천</h1>
       <p className="mb-3 text-xs text-gray-500">
         서울·경기 공고를 자격·순위로 추천해요. 결과가 비어 있으면{" "}
-        <Link href="/settings" className="text-blue-700 underline">
+        <Link href="/settings" replace className="text-blue-700 underline">
           내 프로필
         </Link>
         을 입력해 보세요.
@@ -59,6 +59,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SP }) {
         <div className="mt-4 text-center">
           <Link
             href={`/?${nextParams.toString()}`}
+            replace
             className="inline-block rounded-lg border bg-white px-4 py-2 text-sm font-medium text-blue-700"
             data-testid="feed-load-more"
           >

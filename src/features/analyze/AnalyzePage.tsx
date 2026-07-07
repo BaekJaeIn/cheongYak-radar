@@ -100,7 +100,7 @@ export function AnalyzePage() {
               {profileMissing && (
                 <>
                   {" "}
-                  <Link href="/settings" className="font-medium text-blue-700 underline">
+                  <Link href="/settings" replace className="font-medium text-blue-700 underline">
                     내 프로필 입력하기
                   </Link>
                 </>

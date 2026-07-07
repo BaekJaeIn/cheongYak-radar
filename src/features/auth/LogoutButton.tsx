@@ -1,11 +1,9 @@
 "use client";
 // 로그아웃 + 로그인 계정 표시 (v6 FR-13.4). 설정 페이지 하단에 배치.
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { getBrowserClient } from "@/lib/supabase/browser";
 
 export function LogoutButton() {
-  const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -20,8 +18,8 @@ export function LogoutButton() {
     setBusy(true);
     try {
       await getBrowserClient().auth.signOut();
-      router.push("/login");
-      router.refresh();
+      // 하드 내비게이션 — 로그인 상태의 라우터 캐시를 버리고 새 세션 상태로 재평가 (v7 버그 1)
+      window.location.replace("/login");
     } finally {
       setBusy(false);
     }

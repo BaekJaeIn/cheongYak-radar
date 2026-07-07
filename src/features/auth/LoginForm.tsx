@@ -2,7 +2,6 @@
 // C38 로그인/가입/비밀번호 재설정 3모드 폼 (v6 FR-13.1~13.4).
 // 비밀번호는 Supabase Auth SDK로만 전달 — 앱 저장·로깅 없음 (BR-U8-3).
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { authErrorMessage } from "./errors";
 
@@ -16,7 +15,6 @@ const TITLE: Record<Mode, string> = {
 };
 
 export function LoginForm() {
-  const router = useRouter();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,8 +48,9 @@ export function LoginForm() {
           ? await auth.signInWithPassword({ email, password })
           : await auth.signUp({ email, password });
       if (error) throw error;
-      router.push("/");
-      router.refresh();
+      // 하드 내비게이션 — 로그아웃 상태에서 프리페치된 라우터 캐시(/ → /login 리다이렉트)를
+      // 우회해 로그인 직후 /login에 머무는 문제(v7 버그 1) 방지
+      window.location.replace("/");
     } catch (err) {
       setStatus("idle");
       setMessage(authErrorMessage((err as Error).message));

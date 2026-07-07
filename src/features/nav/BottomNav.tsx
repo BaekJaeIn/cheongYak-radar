@@ -22,13 +22,14 @@ export function BottomNav() {
           <Link
             key={t.href}
             href={t.href}
+            replace
             data-testid={t.testid}
             prefetch={t.href === "/" ? false : undefined}
             onClick={
               t.href === "/"
                 ? (e) => {
                     e.preventDefault();
-                    router.push("/");
+                    router.replace("/");
                     router.refresh(); // 캐시 무효화 → 최신 추천 재요청
                   }
                 : undefined
