@@ -1,10 +1,12 @@
-// C17 — 청약 일정 타임라인 (US-4.2).
+// C17 — 청약 일정 타임라인 (US-4.2). v3: 청약시작 캘린더 추가 (FR-11).
 import type { Notice } from "@/lib/types/notice";
 import { buildTimeline } from "./timeline";
+import { buildGoogleCalendarUrl } from "./calendar-link";
 
 export function ScheduleTimeline({ notice, today }: { notice: Notice; today: string }) {
   const stages = buildTimeline(notice, today);
   if (stages.length === 0) return null;
+  const calendarUrl = buildGoogleCalendarUrl(notice);
   const dot: Record<string, string> = {
     past: "bg-gray-300",
     current: "bg-blue-600 ring-2 ring-blue-200",
@@ -20,6 +22,17 @@ export function ScheduleTimeline({ notice, today }: { notice: Notice; today: str
             <span className={`text-sm ${s.state === "current" ? "font-semibold text-blue-700" : "text-gray-700"}`}>
               {s.label}
             </span>
+            {s.key === "apply_start" && calendarUrl && (
+              <a
+                href={calendarUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="whitespace-nowrap rounded-md border border-blue-200 px-2 py-0.5 text-[11px] text-blue-700"
+                data-testid="add-to-calendar"
+              >
+                캘린더에 추가
+              </a>
+            )}
             <span className="ml-auto text-xs text-gray-500">{s.date}</span>
           </li>
         ))}
