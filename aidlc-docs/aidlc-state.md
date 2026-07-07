@@ -83,12 +83,19 @@
 - [x] Code Generation — DONE (북마크·PWA·Push 구독/발송; vitest 99, tsc clean, next build OK)
 - [x] Build and Test — DONE (vitest 99, tsc clean, next build OK; instructions + summary 생성)
 **v2 잔여 순서**: ~~0004~~ → ~~U1 보강~~ → ~~U6~~ → ~~U3~~ → ~~U4~~ → ~~U5~~ → **Build & Test**
+**v3 변경요청 (Change Request — 청약시작일 캘린더 추가, 2026-07-07)**
+- [x] Requirements Analysis (minimal) — Q1=A(종일 일정), Q2=A(타임라인 버튼); requirements.md §13 FR-11 반영. 승인 게이트 대기
+- [x] Code Generation — U4 상세 (calendar-link.ts 유틸 + 테스트 5 + ScheduleTimeline 버튼; vitest 136, tsc clean, next build OK). ✅ 승인 (2026-07-07)
+**v4 변경요청 (Change Request — 공고분석 탭: PDF 자격판정, 2026-07-07)**
+- [x] Requirements Analysis (standard) — Q1=A(PDF 직송), Q2=A(추출+matcher), Q3=A(미저장); requirements.md §14 FR-12 ✅ 승인
+- [x] U7 Functional Design — D-1(Edge action "analyze") · D-2(JSON 강제 추출) · D-3(합성 NoticeInput→evaluate); 산출물 4종 ✅ 승인
+- [x] U7 Code Generation — Edge analyze.ts+index 분기+테스트 8 / /api/analyze / features·app analyze UI+테스트 4 / BottomNav 4탭 (vitest 148, tsc clean, next build OK). ✅ 승인 (2026-07-07)
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: CONSTRUCTION
-- **Current Stage**: CONSTRUCTION — **Build & Test COMPLETE**. 전체 워크플로우(INCEPTION+CONSTRUCTION) 완료. Operations는 플레이스홀더.
-- **Next Stage**: Operations (PLACEHOLDER) — 배포/모니터링은 향후. 배포 전 체크리스트는 build-and-test-summary.md.
-- **Status**: ✅ 개발 완료 (vitest 99, tsc clean, next build OK)
+- **Lifecycle Phase**: CONSTRUCTION 완료 (v4까지)
+- **Current Stage**: v3(캘린더 추가)·v4(공고분석 탭) ✅ 모두 완료·승인 (2026-07-07).
+- **Next Stage**: 배포 — 커밋/푸시(Vercel) + `supabase functions deploy collect`(analyze action 반영). 이후 신규 요청 대기.
+- **Status**: ✅ v1~v4 개발 완료 (vitest 148, tsc clean, next build OK)

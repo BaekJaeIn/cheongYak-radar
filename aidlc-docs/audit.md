@@ -520,3 +520,123 @@
 **Context**: CONSTRUCTION — U6 Infrastructure Design complete; approval gate before U6 Code Generation.
 
 ---
+
+## v3 Change Request — 캘린더 추가 기능 타당성 질문
+**Timestamp**: 2026-07-06T23:40:00Z
+**User Input**: "내가 원하는 공고의 청약신청시작일자를 캘린더에 추가하는 기능이 가능할까? 주로 pwa 어플 형태로 사용할거고 삼성캘린더에 추가할거야"
+**AI Response**: "Feasibility assessment (질문 단계, 워크플로우 미착수). 데이터는 이미 존재(notices.apply_start, U4 ScheduleTimeline). 삼성캘린더는 웹 API가 없어 3가지 우회안 제시: (1) Android 인텐트 URL(INSERT event, 삼성캘린더 직접), (2) ICS 파일 다운로드(범용 폴백, VALARM 가능), (3) Google 캘린더 템플릿 링크(calendar.google.com/render, 삼성캘린더의 Google 계정 동기화 경유). 추천안: 상세 타임라인에 버튼 + 인텐트/ICS. 서버·DB 변경 불필요, 유틸 1 + 컴포넌트 1 소규모."
+**Context**: Pre-workflow feasibility question — 사용자 방식 선택 대기.
+
+---
+
+## v3 Change Request — 방식 확정(Google 캘린더 링크) / Requirements Analysis 시작
+**Timestamp**: 2026-07-07T00:00:13Z
+**User Input**: "3번으로 할게. 내 구글 아이디에 연동할거야. 아이디 알려줘야해?"
+**AI Response**: "구글 아이디 불필요 안내(템플릿 링크는 기기에 로그인된 본인 계정으로 열림; OAuth/서버 연동 없음; 삼성캘린더는 Google 계정 동기화로 표시). v3 변경요청 워크플로우 시작: common rules 로드(process-overview, session-continuity, content-validation, question-format-guide) + inception/requirements-analysis.md 로드. Extensions 확인 — aidlc-state Extension Configuration상 Security/Resiliency/PBT 모두 Disabled → 스킵. Intent 분석: New Feature / Single Component(U4 상세) / Trivial~Simple → Requirements depth = Minimal. 확인 질문 2건 생성(requirements-change-v3-calendar-questions.md: Q1 일정 형태, Q2 버튼 위치). 질문 게이트에서 대기."
+**Context**: v3 Change Request (캘린더 추가) — Requirements Analysis 질문 게이트; 답변 대기.
+
+---
+
+## v3 Requirements Analysis — 답변 수신 / requirements.md §13 반영
+**Timestamp**: 2026-07-07T00:05:00Z
+**User Input**: "완료" (requirements-change-v3-calendar-questions.md: Q1=A, Q2=A)
+**AI Response**: "답변 분석 — Q1=A(청약시작일 하루 종일 일정), Q2=A(상세 타임라인 '청약시작' 행 버튼). 모순·모호점 없음. requirements.md에 §13 v3 변경 추가: FR-11.1~11.4(버튼 노출 조건 apply_start 존재, Google 캘린더 템플릿 URL 새 탭, 종일 일정 dates=YYYYMMDD/+1 exclusive, 제목 '[청약시작] {공고제목}' + 설명에 마감일·공고 URL·앱 링크, 계정연동/서버·DB 변경 없음), C-9(리마인더 지정 불가), A-5(삼성캘린더 Google 동기화 가정), 코드 영향(U4 소단위: 순수 유틸 + ScheduleTimeline 버튼). aidlc-state 갱신(RA [x], 승인 게이트). 실행 계획: User Stories/설계 단계 스킵(단순·기존 컴포넌트 경계 내), Code Generation만 실행 후 vitest·tsc·build 검증. REVIEW REQUIRED 제시, 승인 대기."
+**Context**: v3 Change Request — Requirements Analysis 완료; 승인 게이트.
+
+---
+
+## 공고분석 탭(PDF 자격판정) — 타당성 질문
+**Timestamp**: 2026-07-07T00:12:00Z
+**User Input**: "공고분석탭을 하나 더 만들어서 내가 원하는 공고의 pdf 파일을 넣으면 지원이 가능한지 알려주는것도 만들 수 있어?"
+**AI Response**: "Feasibility assessment (질문 단계, 워크플로우 미착수). 가능 — 기존 자산 재사용 구조 제시: Gemini(gemini-2.0-flash, 서버 키)로 PDF에서 EligibilityCriteria 구조화 추출 → 기존 EligibilityMatcher.evaluate + criteria-2026 config로 household_profile 대비 판정(eligible/conditional/ineligible + 사유) → 결과 UI. 프로필은 LLM에 미전송(프라이버시). 주의점: 스캔본 PDF(Gemini vision으로 해결), Vercel 바디 4.5MB 제한(클라이언트 pdf.js 텍스트 추출 or Gemini File API), LLM 추출 정확도(추출 기준 화면 병기로 검증 가능하게), 판정은 참고용 고지. 규모 Moderate — 별도 v4 변경요청 권장. v3(캘린더)는 승인 게이트 유지 중."
+**Context**: Pre-workflow feasibility question — v3 승인 게이트 대기 중 신규 기능 문의.
+
+---
+
+## v3 Requirements 승인 / Code Generation 시작
+**Timestamp**: 2026-07-07T00:20:00Z
+**User Input**: "승인"
+**AI Response**: "v3 요구사항(§13 FR-11) + 실행 계획(User Stories·설계 스킵, 즉시 Code Generation, vitest·tsc·build 검증) 승인 처리. 승인이 실행 계획을 명시적으로 포함하므로 v2 소단위 선례에 따라 플랜 별도 게이트 없이 진행. U4-detail-v3-calendar-code-generation-plan.md 생성(5 steps: calendar-link.ts 유틸 → 단위 테스트 → ScheduleTimeline 버튼 → 코드 요약 → 검증). 참고: 앱 상세 링크는 사이트 URL env 부재로 설명(details)에서 생략 — 접수기간·공고 원문 URL만 포함(FR-11.3 부분 조정, 요약 문서에 기록). 직전 턴 공고분석 탭(v4) 문의는 v3 완료 후 착수 예정."
+**Context**: v3 Change Request — Code Generation PART 1(plan) 완료, PART 2(generation) 진행.
+
+---
+
+## v3 Code Generation — 구현·검증 완료
+**Timestamp**: 2026-07-07T00:30:00Z
+**User Input**: (없음 — 승인된 플랜 실행)
+**AI Response**: "플랜 5 steps 실행 완료. Created src/features/detail/calendar-link.ts (buildGoogleCalendarUrl: apply_start 없으면 null; action=TEMPLATE, text '[청약시작] {제목}', dates 종일 exclusive UTC 롤오버 안전, details 접수기간+원문 URL) + __tests__/calendar-link.test.ts (5 tests). Modified ScheduleTimeline.tsx — '청약시작' 행에 캘린더에 추가 앵커(data-testid=add-to-calendar, 새 탭, RSC 유지). 코드 요약 v3-calendar-code-summary.md 생성. 검증: vitest 136 passed(+5), tsc clean, next build OK. 플랜 체크박스 [x], state 갱신. 완료 메시지 제시, 코드 승인 대기."
+**Context**: v3 Change Request — Code Generation PART 2 완료; 코드 승인 게이트.
+
+---
+
+## v3 코드 승인 — v3 완료 / v4 Requirements Analysis 시작
+**Timestamp**: 2026-07-07T00:35:00Z
+**User Input**: "승인"
+**AI Response**: "v3 코드 승인 기록 — v3 변경요청(청약시작일 캘린더 추가) 완료 (state [x], vitest 136·tsc clean·next build OK). 사전 합의 순서(2026-07-07 '승인' 시 v3 완료 후 v4 착수)에 따라 v4 변경요청(공고분석 탭: PDF 자격판정) Requirements Analysis 시작 — depth Standard(신규 탭/라우트 + 업로드 + LLM 추출 + matcher 재사용, Moderate). 확인 질문 3건 생성(requirements-change-v4-analysis-questions.md: Q1 PDF 입력 처리(서버 직송/pdf.js 텍스트/하이브리드), Q2 판정 방식(구조 추출+기존 matcher vs LLM 직접), Q3 결과 저장 여부). 질문 게이트 대기."
+**Context**: v3 완료; v4 Change Request — Requirements Analysis 질문 게이트.
+
+---
+
+## v4 Requirements Analysis — 답변 수신 / requirements.md §14 반영
+**Timestamp**: 2026-07-07T00:45:00Z
+**User Input**: "완료" (requirements-change-v4-analysis-questions.md: Q1=A, Q2=A, Q3=A)
+**AI Response**: "답변 분석 — Q1=A(PDF 서버 직송→Gemini, ~3MB 실효 상한 안내), Q2=A(하이브리드: Gemini 기준 추출→기존 EligibilityMatcher 판정, 프로필 LLM 미전송), Q3=A(화면 표시만·저장 안 함). 모순·모호점 없음. requirements.md §14 v4 추가: FR-12.1~12.6, C-10(크기 제한)·C-11(정확도/참고용 고지), A-6(스캔본 vision)·A-7(무료 티어), 코드 영향(신규 소단위 U7: /analyze 라우트+nav 탭, /api/analyze, matcher 재사용 방식은 설계 확정, DB 무변경). 실행 계획 제안: User Stories 스킵(단일 시나리오·단일 페르소나, 옵션 제공), U7 Functional Design(light) → Code Generation → 검증. REVIEW REQUIRED 제시, 승인 대기."
+**Context**: v4 Change Request — Requirements Analysis 완료; 승인 게이트.
+
+---
+
+## v4 승인 / U7 Functional Design 완료
+**Timestamp**: 2026-07-07T00:55:00Z
+**User Input**: "승인"
+**AI Response**: "v4 요구사항 승인 기록. U7 공고분석 Functional Design 실행 — 코드 분석(matcher.evaluate 시그니처·MatchResult/SupplyTypeMatch, collect index.ts action 라우팅(recompute/test-push), summarize.ts Gemini REST 패턴, recommend/service.ts 프로필 조회, tsconfig supabase/functions exclude, BottomNav TABS, /api/profile 프록시 패턴) 후 질문 없이 설계 확정(요구사항 Q1~Q3이 모호점 해소). 설계 결정 D-1: 추출·판정을 collect Edge action 'analyze'로 실행(GEMINI 키 기존 위치·matcher 네이티브 재사용·프록시 선례), /api/analyze는 검증·프록시. D-2: JSON 강제 추출(없는 값 null). D-3: 합성 NoticeInput→evaluate 재사용, scorer 미사용. 산출물 4종 생성(domain-entities E-U7-1~3, business-rules BR-U7-1~9, business-logic-model C33~C36+흐름도, frontend-components 계층·상태·testid). 플랜 체크박스 [x]. REVIEW REQUIRED 제시, 승인 대기."
+**Context**: v4 Change Request — U7 Functional Design 완료; 승인 게이트 (다음: Code Generation).
+
+---
+
+## U7 Functional Design 승인 / Code Generation PART 1 (플랜)
+**Timestamp**: 2026-07-07T01:05:00Z
+**User Input**: "승인"
+**AI Response**: "U7 Functional Design 승인 기록(state [x]). Code Generation PART 1 — 추가 컨텍스트 분석(index.ts Deno.serve action 분기 구조, service.ts 프로필 조회·loadCriteriaTable, NoticeInput 필드, collect __tests__ 위치) 후 U7-analyze-code-generation-plan.md 생성: 9 steps (Edge analyze.ts 모듈 → index action 분기 → Edge 테스트 → /api/analyze 프록시 → 클라 타입·검증+테스트 → AnalyzePage/AnalyzeResultView/page → BottomNav 4탭 → 코드 요약 → 검증 vitest·tsc·build). Create 8 / Modify 2 (index.ts, BottomNav.tsx). DB·env 변경 없음. 플랜 승인 게이트 제시(U2/U6 선례), 대기."
+**Context**: v4 U7 — Code Generation PART 1 완료; 플랜 승인 게이트.
+
+---
+
+## U7 Code Generation 플랜 승인 / PART 2 시작
+**Timestamp**: 2026-07-07T01:15:00Z
+**User Input**: "승인"
+**AI Response**: "U7 code generation plan 승인 기록. PART 2 실행 시작 — 9 steps 순차 구현."
+**Context**: v4 U7 — Code Generation PART 2 진행.
+
+---
+
+## U7 Code Generation PART 2 — 구현·검증 완료
+**Timestamp**: 2026-07-07T01:35:00Z
+**User Input**: (없음 — 승인된 플랜 실행)
+**AI Response**: "9 steps 완료. Edge: analyze.ts(parseExtracted/toNoticeInput 순수 + extractFromPdf Gemini inline_data JSON 강제 + analyzePdf 오케스트레이션, 오류 4코드) + index.ts body 1회 읽기 리팩터+analyze 분기 + 테스트 8. Next: /api/analyze(nodejs, maxDuration 60, 검증→Edge 프록시), features/analyze(validate 3MB 공용+테스트 4, types 미러, AnalyzePage 상태전이, AnalyzeResultView 배지+기준 병기+고지), /analyze RSC shell, BottomNav 4탭. 이슈 1건 수정: analyze.ts 모듈 최상위 Deno.env 참조로 vitest 수집 실패 → model() 함수로 지연 평가. 검증: vitest 148 passed(+12), tsc clean, next build OK(/analyze·/api/analyze 라우트 확인). 플랜 체크박스 [x]. 배포 메모: supabase functions deploy collect 필요. 완료 메시지 제시, 코드 승인 대기."
+**Context**: v4 U7 — Code Generation PART 2 완료; 코드 승인 게이트.
+
+---
+
+## U7 코드 승인 — v4 완료
+**Timestamp**: 2026-07-07T01:45:00Z
+**User Input**: "승인"
+**AI Response**: "U7 코드 승인 기록 — v4 변경요청(공고분석 탭: PDF 자격판정) 완료. state 갱신(U7 CG ✅). 잔여 사항: 커밋(사용자 요청 시), 배포 시 supabase functions deploy collect + Vercel 배포. v3(캘린더)·v4(공고분석) 모두 완료 상태."
+**Context**: v4 Change Request 완료. 워크플로우 대기 상태(신규 요청 없음).
+
+---
+
+## README — v3·v4 기능 반영
+**Timestamp**: 2026-07-07T02:00:00Z
+**User Input**: "지금 내가 README를 일부 수정했거든. 내가 수정한 내용 건드리지말고 지금 반영된 내용 README에 추가해줘"
+**AI Response**: "git diff로 사용자 수정 영역 확인(인트로 지역 문구 일반화, 표 정렬 재정렬) — 해당 영역 미접촉. 추가만 수행: 주요 기능에 '캘린더 추가'·'공고분석(PDF 자격판정)' 2개 불릿, 디렉터리 구조에 app/analyze·api/analyze·features analyze·collect analyze.ts 반영."
+**Context**: v4 완료 후 문서 보강. 커밋·배포는 사용자 요청 대기.
+
+---
+
+## v3·v4 커밋
+**Timestamp**: 2026-07-07T02:10:00Z
+**User Input**: "일단 여기까지 한거 커밋해줘"
+**AI Response**: "3개 커밋으로 분리 커밋(main): 95f3c1e feat 캘린더 추가(v3, 3 files), 07bc928 feat 공고분석 탭(v4, 11 files), a553849 docs README+aidlc-docs(15 files, 사용자 README 수정 포함). 푸시는 미수행(요청 대기) — 푸시 시 Vercel 자동 배포, Edge는 supabase functions deploy collect 별도 필요."
+**Context**: v3·v4 완료분 커밋. audit 본 항목은 docs 커밋에 amend 포함.
+
+---
