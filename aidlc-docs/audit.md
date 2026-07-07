@@ -640,3 +640,11 @@
 **Context**: v3·v4 완료분 커밋. audit 본 항목은 docs 커밋에 amend 포함.
 
 ---
+
+## 푸시·배포 + Gemini 모델 단종 이슈 수정
+**Timestamp**: 2026-07-07T02:30:00Z
+**User Input**: "다 해줘"
+**AI Response**: "git push(main 2f867eb..8db3912, Vercel 자동 배포) + supabase functions deploy collect 완료. 스모크 테스트(비공고 PDF → analyze action)로 2개 프로덕션 이슈 발견·수정: (1) Edge 시크릿에 GEMINI_API_KEY 부재(기존 AI 요약도 스킵되고 있었음) → .env.local 키로 secrets set. (2) gemini-2.0-flash 모델 단종(404) → gemini-2.5-flash 검증 후 GEMINI_MODEL 시크릿 설정 + 코드 기본값(summarize.ts·analyze.ts)·README 갱신. 최종 스모크 테스트 통과: 비공고 PDF → {ok:false, code:notAnnouncement} (Gemini 추출 왕복 확인). vitest 148·tsc clean 재확인. 모델 기본값 수정 커밋·푸시·Edge 재배포 진행."
+**Context**: v3·v4 배포 완료 + 프로덕션 설정 복구 (AI 요약 부활 포함).
+
+---

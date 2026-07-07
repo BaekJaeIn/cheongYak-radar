@@ -1,9 +1,9 @@
 // 자격조건 AI 요약 (U4 사양, U1에서 실행). BR-8: summary 없는 공고만, 1회 상한.
-// 키는 서버 전용(NFR-3). 제공자: Google Gemini API (gemini-2.0-flash).
+// 키는 서버 전용(NFR-3). 제공자: Google Gemini API (gemini-2.5-flash, GEMINI_MODEL로 교체 가능).
 
 import type { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
-const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.0-flash";
+const MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
 const DEFAULT_LIMIT = 10; // Q-IU3=A
 
 interface NoticeRow {

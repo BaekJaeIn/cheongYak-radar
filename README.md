@@ -30,7 +30,7 @@
 | Frontend   | Next.js 14 (App Router), TypeScript, Tailwind CSS           |
 | PWA        | 서비스워커(`public/sw.js`), `manifest.json`, Web Push API   |
 | Backend/DB | Supabase (PostgreSQL, Edge Functions, pg_cron, Vault)       |
-| AI 요약    | Google Gemini (`gemini-2.0-flash`)                          |
+| AI 요약    | Google Gemini (`gemini-2.5-flash`)                          |
 | 배포       | Vercel (프론트엔드) · Supabase (DB / Edge Functions / cron) |
 | 테스트     | Vitest                                                      |
 

@@ -9,7 +9,7 @@ import type { HouseholdProfile, MatchResult } from "./recommend/types.ts";
 
 // Deno.env는 함수 안에서만 접근 — 순수 함수(parseExtracted 등)를 Node(vitest)에서도 import 가능하게.
 function model(): string {
-  return Deno.env.get("GEMINI_MODEL") ?? "gemini-2.0-flash";
+  return Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
 }
 const DISCLAIMER = "참고용 판정입니다 — 최종 판단은 반드시 공고 원문을 확인하세요.";
 
