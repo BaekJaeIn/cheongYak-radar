@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import { authErrorMessage } from "./errors";
+import { Spinner } from "@/features/ui/Spinner";
 
 type Mode = "login" | "signup" | "reset";
 type Status = "idle" | "submitting" | "resetSent";
@@ -91,9 +92,10 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="mt-3 w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
           data-testid="login-submit"
         >
+          {status === "submitting" && <Spinner size="sm" />}
           {status === "submitting" ? "처리 중…" : TITLE[mode]}
         </button>
         {message && (

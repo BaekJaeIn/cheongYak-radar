@@ -2,6 +2,7 @@
 // 로그아웃 + 로그인 계정 표시 (v6 FR-13.4). 설정 페이지 하단에 배치.
 import { useEffect, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/browser";
+import { Spinner } from "@/features/ui/Spinner";
 
 export function LogoutButton() {
   const [email, setEmail] = useState<string | null>(null);
@@ -37,9 +38,10 @@ export function LogoutButton() {
         type="button"
         onClick={onLogout}
         disabled={busy}
-        className="rounded-lg border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
         data-testid="logout-btn"
       >
+        {busy && <Spinner size="sm" />}
         {busy ? "로그아웃 중…" : "로그아웃"}
       </button>
     </div>

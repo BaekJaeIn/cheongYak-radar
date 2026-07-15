@@ -1,7 +1,9 @@
 "use client";
 // 보조 필터 (C15 축소, BR-U3-5). URL searchParams 갱신 → 서버 재조회.
+import { useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { FeedKind } from "@/features/recommendations/types";
+import { Spinner } from "@/features/ui/Spinner";
 
 const KINDS: { key?: FeedKind; label: string }[] = [
   { key: undefined, label: "전체" },
@@ -12,6 +14,7 @@ const KINDS: { key?: FeedKind; label: string }[] = [
 export function FeedFilterBar() {
   const router = useRouter();
   const sp = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const kind = sp.get("kind") ?? undefined;
   const expired = sp.get("expired") === "1";
 
@@ -26,7 +29,8 @@ export function FeedFilterBar() {
       else p.delete("expired");
     }
     p.delete("limit"); // 필터 변경 시 페이지 초기화
-    router.replace(`/?${p.toString()}`);
+    // 같은 경로라 loading.tsx 미적용 → 서버 재조회 동안 스피너 표시
+    startTransition(() => router.replace(`/?${p.toString()}`));
   }
 
   return (
@@ -46,6 +50,7 @@ export function FeedFilterBar() {
           );
         })}
       </div>
+      {isPending && <Spinner size="sm" className="text-blue-600" />}
       <label className="ml-auto flex items-center gap-1 text-xs text-gray-600">
         <input
           type="checkbox"

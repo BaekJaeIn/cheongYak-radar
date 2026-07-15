@@ -6,6 +6,7 @@ import { getProfile } from "@/features/profile/repository";
 import { getSessionUser } from "@/lib/supabase/session";
 import { RecommendationFeed } from "@/features/feed/RecommendationFeed";
 import { FeedFilterBar } from "@/features/feed/FeedFilterBar";
+import { LoadMoreButton } from "@/features/feed/LoadMoreButton";
 import { InstallBanner } from "@/features/pwa/InstallBanner";
 import { todayKST } from "@/features/notices/query-builder";
 
@@ -57,14 +58,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SP }) {
 
       {feed.hasMore && (
         <div className="mt-4 text-center">
-          <Link
-            href={`/?${nextParams.toString()}`}
-            replace
-            className="inline-block rounded-lg border bg-white px-4 py-2 text-sm font-medium text-blue-700"
-            data-testid="feed-load-more"
-          >
-            더 보기
-          </Link>
+          <LoadMoreButton href={`/?${nextParams.toString()}`} />
         </div>
       )}
     </section>

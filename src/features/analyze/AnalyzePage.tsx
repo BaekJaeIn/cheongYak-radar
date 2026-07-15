@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { AnalyzeOutcome } from "./types";
 import { validatePdfFile } from "./validate";
 import { AnalyzeResultView } from "./AnalyzeResultView";
+import { Spinner } from "@/features/ui/Spinner";
 
 type Status = "idle" | "uploading" | "done" | "error";
 
@@ -89,9 +90,10 @@ export function AnalyzePage() {
             type="button"
             onClick={submit}
             disabled={!file || status === "uploading"}
-            className="w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white disabled:bg-gray-300"
             data-testid="analyze-submit-button"
           >
+            {status === "uploading" && <Spinner size="sm" />}
             {status === "uploading" ? "분석 중… (최대 1분)" : "지원 가능한지 분석"}
           </button>
           {status === "error" && message && (

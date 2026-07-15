@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { HouseholdProfile, MaritalStatus } from "@/lib/types/profile";
 import { ALL_SOURCES, SOURCE_LABEL, type SourceType } from "@/lib/types/notice";
+import { Spinner, CenteredSpinner } from "@/features/ui/Spinner";
 
 function emptyProfile(): HouseholdProfile {
   return {
@@ -136,7 +137,7 @@ export function ProfileForm() {
   const label = "text-xs font-medium text-gray-600";
   const section = "rounded-xl border bg-white p-4";
 
-  if (status === "loading") return <p className="text-sm text-gray-500">불러오는 중…</p>;
+  if (status === "loading") return <CenteredSpinner text="프로필 불러오는 중…" />;
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-3" data-testid="profile-form">
@@ -315,9 +316,10 @@ export function ProfileForm() {
       <button
         type="submit"
         disabled={status === "saving"}
-        className="rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+        className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
         data-testid="profile-save"
       >
+        {status === "saving" && <Spinner size="sm" />}
         {status === "saving" ? "저장 중…" : "저장하고 추천 갱신"}
       </button>
       {message && (

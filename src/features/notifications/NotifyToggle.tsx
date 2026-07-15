@@ -2,6 +2,7 @@
 // 알림 구독 토글 (C24, US-5.4).
 import { useEffect, useState } from "react";
 import { subscribe, unsubscribe, currentPermission, pushSupported } from "./push-client";
+import { Spinner } from "@/features/ui/Spinner";
 
 export function NotifyToggle() {
   const [state, setState] = useState<NotificationPermission | "unsupported" | "loading">("loading");
@@ -13,7 +14,15 @@ export function NotifyToggle() {
   }, []);
 
   if (state === "loading") {
-    return <span className="text-xs text-gray-400" data-testid="notify-loading">알림 확인 중…</span>;
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 text-xs text-gray-400"
+        data-testid="notify-loading"
+      >
+        <Spinner size="sm" />
+        알림 확인 중…
+      </span>
+    );
   }
   if (state === "unsupported") {
     return <p className="text-xs text-gray-400" data-testid="notify-unsupported">이 기기는 알림을 지원하지 않아요.</p>;
@@ -57,8 +66,13 @@ export function NotifyToggle() {
       {state === "granted" ? (
         <>
           <span className="text-green-700">알림 켜짐</span>
-          <button onClick={onDisable} disabled={busy} className="text-gray-500 underline">
-            끄기
+          <button
+            onClick={onDisable}
+            disabled={busy}
+            className="inline-flex items-center gap-1 text-gray-500 underline"
+          >
+            {busy && <Spinner size="sm" />}
+            {busy ? "끄는 중…" : "끄기"}
           </button>
         </>
       ) : state === "denied" ? (
@@ -67,8 +81,9 @@ export function NotifyToggle() {
         <button
           onClick={onEnable}
           disabled={busy}
-          className="rounded bg-blue-600 px-2 py-1 font-medium text-white disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded bg-blue-600 px-2 py-1 font-medium text-white disabled:opacity-50"
         >
+          {busy && <Spinner size="sm" />}
           {busy ? "설정 중…" : "새 추천 알림 받기"}
         </button>
       )}
