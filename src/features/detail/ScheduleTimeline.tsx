@@ -1,13 +1,12 @@
 // C17 — 청약 일정 타임라인 (US-4.2). v3: 청약시작 캘린더 추가 (FR-11).
 import type { Notice } from "@/lib/types/notice";
 import { buildTimeline } from "./timeline";
-import { buildCalendarEvent } from "./calendar-link";
+import { buildGoogleCalendarUrl } from "./calendar-link";
 
 export function ScheduleTimeline({ notice, today }: { notice: Notice; today: string }) {
   const stages = buildTimeline(notice, today);
   if (stages.length === 0) return null;
-  // 청약시작일이 없는 출처(LH·SH·GH)는 마감일/공고일 단계에 버튼을 붙인다.
-  const calendar = buildCalendarEvent(notice);
+  const calendarUrl = buildGoogleCalendarUrl(notice);
   const dot: Record<string, string> = {
     past: "bg-gray-300",
     current: "bg-blue-600 ring-2 ring-blue-200",
@@ -23,9 +22,9 @@ export function ScheduleTimeline({ notice, today }: { notice: Notice; today: str
             <span className={`text-sm ${s.state === "current" ? "font-semibold text-blue-700" : "text-gray-700"}`}>
               {s.label}
             </span>
-            {calendar && s.key === calendar.stageKey && (
+            {s.key === "apply_start" && calendarUrl && (
               <a
-                href={calendar.url}
+                href={calendarUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="whitespace-nowrap rounded-md border border-blue-200 px-2 py-0.5 text-[11px] text-blue-700"

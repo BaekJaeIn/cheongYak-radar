@@ -286,3 +286,29 @@
 1. **버그**: 로그인 직후 하단 탭 소실 — 로그아웃 상태에서 프리페치된 `/`(→/login 리다이렉트) 라우터 캐시를 `router.push`가 재사용해 로그인 후에도 /login에 머무는 문제. → 로그인/로그아웃 성공 시 하드 내비게이션.
 2. **문의(코드 변경 없음)**: 의왕시 공고 미노출 — 데이터·매칭 정상. LH 의왕내손 국민임대는 소득 한도(2인 420만) 초과로 자격 탈락, apt 의왕 공고는 2025-12 마감.
 3. **FR-16 (뒤로가기 2회 종료)**: 설치형(PWA standalone)에서 어느 화면이든 뒤로가기 1회 = 홈 이동+안내 토스트, 2초 내 1회 더 = 앱 종료. 앱 내 모든 이동은 replace로 히스토리 비축적. 브라우저 탭에서는 미개입.
+
+---
+
+# 17. v9 변경 — LH·SH·GH 청약시작일 수집 (2026-10-05 Change Request)
+
+> **의도 분석**: Enhancement / Multiple Components(Edge collect 수집기 3종 + U4 상세 캘린더) / Moderate → 요구사항 깊이 **Standard**. 배경: 2026-10-04 afea1bb에서 LH·SH·GH도 캘린더 버튼을 마감일/공고일 대체로 노출했으나, 사용자는 **청약시작일** 일정을 원함. 결정: Q1=A(LH 상세 API), Q2=A(SH 상세 본문 파싱), Q3=A(GH 수집기 교체), Q4=B(시작일 없으면 버튼 숨김).
+
+## 17.1 기능 요구사항
+### FR-17 출처별 청약시작일 수집
+- FR-17.1 **LH** (Q1=A): 목록 API로 필터(주택·서울·경기)를 통과한 공고마다 **LH 분양임대공고별 상세정보 API**(data.go.kr 15057999, `lhLeaseNoticeDtlInfo1/getLeaseNoticeDtlInfo1`)를 호출한다. 파라미터 `PAN_ID`·`CCR_CNNT_SYS_DS_CD`·`SPL_INF_TP_CD`·`UPP_AIS_TP_CD`·`AIS_TP_CD`는 목록 행에서 전달. `dsSplScdl[].ACP_DTTM`(예: `2026.07.20 10:00 ~ 2026.07.21 17:00`) 중 **가장 이른 날짜 = apply_start**, `PZWR_ANC_DT`(YYYYMMDD) 중 가장 이른 날짜 = winner_date. 상세 호출 실패(활용신청 미승인 포함)는 해당 공고만 시작일 없음으로 두고 수집은 계속.
+- FR-17.2 **SH** (Q2=A): 서울주거포털 임대(`publicLease/list`)·분양(`publicSale/01/list`) 목록을 HTML 주석 제거 후 셀 위치 기반으로 파싱(번호·유형·공고명·게시일·발표일[·모집상태]·담당부서·링크). 임대는 **모집상태 '모집중'만**, 분양은 게시일 90일 이내만 대상. 각 공고의 i-sh.co.kr 상세 본문에서 접수 키워드(접수일·신청기간·청약신청 일정·신청접수 일정 등) 뒤 160자 안의 첫 날짜(범위면 시작~끝)를 apply_start/apply_end로 추출. 목록 게시일 = notice_date, 발표일 = winner_date. 현재 비활성인 SH 수집기를 이 방식으로 재작성해 **재활성**.
+- FR-17.3 **GH** (Q3=A): GH 수집기를 **GH 주택청약·임대센터 메인**(`apply.gh.or.kr/co/coa/selectMainView.do`) 카드 크롤링으로 교체. 카드의 `data-pbancNo`(→ id `gh:{pbancNo}`)·`data-bizTyNm`(공급유형)·공고명·"신청기간 YYYY-MM-DD ~ YYYY-MM-DD"(→ apply_start/apply_end) 사용. **상가 유형 제외**. 공고 링크는 bizTyCd별 상세 경로(`06`→sr7155, `07`→sr7170, 기타→sr7150)`?pbancNo=`. 지역은 경기 고정 + 공고명에서 시군 파싱. 대기열(NetFunnel) 활성 시 우회하지 않고 해당 회차 skip.
+- FR-17.4 **캘린더 버튼** (Q4=B): `apply_start`가 있는 공고에서만 '청약시작' 행에 버튼 노출(v3 FR-11.1 원래 동작으로 복귀). afea1bb의 마감일/공고일 대체 로직 제거. 설명(details)의 접수기간·원문 URL 표기는 유지.
+- FR-17.5 날짜는 출처 형식(`2026.07.14`, `20260819`, `2026. 10. 6.`)과 무관하게 **YYYY-MM-DD로 정규화**해 적재.
+
+## 17.2 제약/가정
+- C-15 LH 상세 API는 **사용자가 data.go.kr에서 15057999 활용신청**을 해야 동작(기존 `DATA_GO_KR_API_KEY` 재사용). 승인 전에는 LH 시작일 없음 → LH 버튼 숨김.
+- C-16 SH 본문은 자유 텍스트 — 2026-10-05 실측 12건 중 9건 추출(미추출 3건은 본문에 접수 일정 자체가 없는 정정·첨부 전용 공고). 미추출 공고는 시작일 없음.
+- C-17 GH 메인은 최근 공고만 노출(실측 17건). 기존 `GH_API_URL` 기반 GH 행은 id 체계가 달라 갱신되지 않고 남음 — 마감일 경과 시 피드에서 자연 소멸(마감일 없는 행은 잔존 가능, 필요 시 정리 SQL 별도).
+- C-18 외부 사이트 요청 예절: 상세 요청은 순차/저동시성, robots 허용 경로만(i-sh.co.kr `/main/lay2/...`, apply.gh.or.kr `Allow: /*`).
+- A-11 Supabase Edge Runtime(Deno)이 apply.gh.or.kr TLS에 접속 가능하다고 가정 — 로컬 Deno 2.9.7에서 3개 사이트 접속 성공 확인, 배포 후 수집 로그로 재확인.
+
+## 17.3 코드 영향
+- Edge `collect`: `collectors/lh.ts`(상세 API 보강) · `collectors/sh.ts`(재작성) · `collectors/gh.ts`(교체) · 신규 순수 파서 모듈(날짜 정규화·LH ACP_DTTM·SH 본문·GH 카드, vitest 대상) · `index.ts`(SH 재활성).
+- U4: `calendar-link.ts`·`ScheduleTimeline.tsx`·테스트 — 시작일 전용으로 복귀.
+- DB·마이그레이션·env 추가 없음. 배포: `supabase functions deploy collect` + git push(Vercel).

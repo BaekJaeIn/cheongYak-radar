@@ -97,6 +97,10 @@
 - [x] U8 Code Generation PART 2 — 구현 12/12 완료(0012·0013 / ssr 클라이언트·middleware·/login·로그아웃 / API 세션화 / Edge 회원화 / 북마크 DB화 / 테스트 14 신규; vitest 162, tsc clean, next build OK) ✅ 승인
 - [x] U8 롤아웃 — ① 0012 push ② 커밋 d8ab93d push+Edge deploy ③ 로그인 확인 후 0013 ④ jiback96@naver.com 가입·귀속(orphan 0) ⑤ autoconfirm ON·site_url·allow list. 검증 중 수정 2건: 0014 upsert_recommendations 변수충돌(af220ed, 추천 7건 복원)·middleware src/ 이동(b0220d7)
 
+**v9 변경요청 (Change Request — LH·SH·GH 청약시작일 수집, 2026-10-05)**
+- [x] Requirements Analysis (standard) — Q1=A(LH 상세 API)·Q2=A(SH 상세 파싱)·Q3=A(GH 교체)·Q4=B(시작일 없으면 버튼 숨김); requirements.md §17 FR-17 ✅ 승인
+- [x] Code Generation — parsers.ts+테스트 14 / LH 상세 API 보강 / SH 재작성·재활성 / GH 메인 크롤링 교체 / 캘린더 시작일 전용 (vitest 181, tsc clean, deno check OK, SH·GH 실사이트 드라이런)
+
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 

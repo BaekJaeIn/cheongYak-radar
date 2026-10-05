@@ -46,15 +46,16 @@ function isMockMode(): boolean {
 function liveCollectors(): Collector[] {
   // 검증 완료: ApplyHome(청약홈 15098547).
   // LH(15088707): LH_FILEDATA_URL 설정 시 적재, 없으면 안전 skip.
-  // GH(경기주택도시공사): GH_API_URL 설정 시 적재, 없으면 안전 skip.
+  //   v9: 상세정보 API(15057999)로 접수시작일 보강.
+  // GH(경기주택도시공사): v9 GH 청약센터 메인 카드 크롤링(신청기간 포함).
   // MyhomeComplex(15110581): 엔드포인트 미확정 → 빈 결과로 비차단.
-  // SH(크롤러): 셀렉터 검증 후 재활성.
+  // SH(크롤러): v9 정규식 목록 파싱 + 상세 접수일 추출로 재활성.
   return [
     new ApplyHomeCollector(),
     new LhCollector(),
     new GhCollector(),
     new MyhomeComplexCollector(),
-    // new ShCollector(),
+    new ShCollector(),
   ];
 }
 

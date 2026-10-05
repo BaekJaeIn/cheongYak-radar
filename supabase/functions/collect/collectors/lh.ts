@@ -3,13 +3,18 @@
 //   예) supabase secrets set LH_API_URL="https://apis.data.go.kr/B552555/lhLeaseNoticeInfo1/lhLeaseNoticeInfo1"
 // 필수 파라미터: PAN_NT_ST_DT(공고게시일), CLSG_DT(마감일). 페이징: PG_SZ/PAGE.
 // 응답은 배열형([{dsSch...},{dsList:[...]}]) → dsList 추출. 403 등 실패 시 비차단 skip(승인 대기 포함).
+// v9 FR-17.1: 목록엔 접수시작일이 없어 필터 통과 공고마다 상세정보 API(data.go.kr 15057999)로
+//   공급일정(dsSplScdl.ACP_DTTM)을 받아 apply_start·winner_date 보강. 상세 실패는 공고 단위 skip.
 
 import { normalize, type RawNotice } from "../normalize.ts";
 import { parseRegion } from "../region-alias.ts";
 import type { Collector, NoticeInput } from "../types.ts";
+import { parseLhSchedule, toIsoDate } from "./parsers.ts";
 
 const PG_SZ = 100;
 const MAX_PAGES = 5;
+const DETAIL_URL = "https://apis.data.go.kr/B552555/lhLeaseNoticeDtlInfo1/getLeaseNoticeDtlInfo1";
+const DETAIL_CONCURRENCY = 4;
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
 
@@ -53,6 +58,37 @@ function extractRows(json: unknown): unknown[] {
   return [];
 }
 
+/** 상세정보 API 호출 → 공급일정. 실패(미승인·오류 봉투·네트워크)는 null. */
+async function fetchSchedule(
+  key: string,
+  r: Record<string, unknown>,
+): Promise<ReturnType<typeof parseLhSchedule> | null> {
+  const panId = pick(r, ["PAN_ID"]);
+  if (!panId) return null;
+  const params = [
+    `PAN_ID=${encodeURIComponent(panId)}`,
+    `CCR_CNNT_SYS_DS_CD=${encodeURIComponent(pick(r, ["CCR_CNNT_SYS_DS_CD"]) ?? "")}`,
+    `SPL_INF_TP_CD=${encodeURIComponent(pick(r, ["SPL_INF_TP_CD"]) ?? "")}`,
+    `UPP_AIS_TP_CD=${encodeURIComponent(pick(r, ["UPP_AIS_TP_CD"]) ?? "")}`,
+    `AIS_TP_CD=${encodeURIComponent(pick(r, ["AIS_TP_CD"]) ?? "")}`,
+  ].join("&");
+  const base = Deno.env.get("LH_DETAIL_API_URL") ?? DETAIL_URL;
+  try {
+    const res = await fetch(`${base}?serviceKey=${key}&${params}`, {
+      headers: { Accept: "application/json", "User-Agent": UA },
+    });
+    const text = await res.text();
+    if (!res.ok || /Forbidden|errMsg|등록되지|SERVICE_KEY|returnReasonCode/i.test(text)) {
+      console.warn(`[lh] 상세 skip ${panId}: HTTP ${res.status} ${text.slice(0, 80).replace(/\s+/g, " ")}`);
+      return null;
+    }
+    return parseLhSchedule(JSON.parse(text));
+  } catch (e) {
+    console.warn(`[lh] 상세 skip ${panId}: ${(e as Error).message}`);
+    return null;
+  }
+}
+
 export class LhCollector implements Collector {
   readonly source = "lh" as const;
 
@@ -65,7 +101,7 @@ export class LhCollector implements Collector {
     }
     const dateRange = `PAN_NT_ST_DT=${ymd(-180)}&CLSG_DT=${ymd(365)}`;
 
-    const out: NoticeInput[] = [];
+    const candidates: { raw: RawNotice; row: Record<string, unknown> }[] = [];
     for (let page = 1; page <= MAX_PAGES; page++) {
       const sep = base.includes("?") ? "&" : "?";
       const url = `${base}${sep}serviceKey=${key}&PG_SZ=${PG_SZ}&PAGE=${page}&${dateRange}`;
@@ -111,17 +147,35 @@ export class LhCollector implements Collector {
           address: addr,
           areaText: pick(r, ["DLT_AR", "전용면적", "면적"]),
           supplyType: supply,
-          notice_date: pick(r, ["PAN_NT_ST_DT", "공고게시일", "공고일"]),
-          apply_end: pick(r, ["CLSG_DT", "마감일", "접수마감일"]),
+          notice_date: toIsoDate(pick(r, ["PAN_NT_ST_DT", "공고게시일", "공고일"])),
+          apply_end: toIsoDate(pick(r, ["CLSG_DT", "마감일", "접수마감일"])),
           url: pick(r, ["DTL_URL", "상세URL", "URL"]) ?? "https://apply.lh.or.kr",
           raw: row,
         };
-        const n = normalize(this.source, raw);
-        if (n) out.push(n);
+        candidates.push({ raw, row: r });
       }
       if (rows.length < PG_SZ) break;
     }
-    console.log(`[lh] 적재 후보 ${out.length}건(서울·경기 필터 후)`);
+
+    // 상세정보 API로 접수시작일·당첨발표일 보강 (저동시성 — 공공 API 예절)
+    let enriched = 0;
+    for (let i = 0; i < candidates.length; i += DETAIL_CONCURRENCY) {
+      const batch = candidates.slice(i, i + DETAIL_CONCURRENCY);
+      const schedules = await Promise.all(batch.map((c) => fetchSchedule(key, c.row)));
+      schedules.forEach((s, j) => {
+        if (!s) return;
+        batch[j].raw.apply_start = s.applyStart;
+        batch[j].raw.winner_date = s.winnerDate;
+        if (s.applyStart) enriched++;
+      });
+    }
+
+    const out: NoticeInput[] = [];
+    for (const c of candidates) {
+      const n = normalize(this.source, c.raw);
+      if (n) out.push(n);
+    }
+    console.log(`[lh] 적재 후보 ${out.length}건(서울·경기 필터 후), 접수시작일 보강 ${enriched}건`);
     return out;
   }
 }

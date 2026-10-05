@@ -1,6 +1,7 @@
 // FR-11 캘린더 추가 — Google 캘린더 이벤트 템플릿 URL 생성 (순수, 테스트 대상).
 // 계정 연동 없음: 링크는 기기에 로그인된 사용자 본인 Google 계정으로 열린다 (FR-11.4).
 // 제약 C-9: 템플릿 링크로는 리마인더 시각을 지정할 수 없다 (사용자 기본 알림 설정 적용).
+// v9 FR-17.4: 청약시작일 전용 — LH·SH·GH도 수집 단계에서 apply_start를 채운다.
 import type { Notice } from "@/lib/types/notice";
 
 const GOOGLE_CALENDAR_BASE = "https://calendar.google.com/calendar/render";
@@ -18,50 +19,23 @@ function nextDayCompact(date: string): string {
   return compact(d.toISOString().slice(0, 10));
 }
 
-export interface CalendarEvent {
-  /** 버튼을 붙일 타임라인 단계 키 (timeline.ts의 Stage.key). */
-  stageKey: "apply_start" | "apply_end" | "notice";
-  url: string;
-}
-
 /**
- * 하루 종일(All-day) 일정의 Google 캘린더 템플릿 URL (FR-11.2~11.3).
- * 청약시작일 우선. LH·SH·GH처럼 시작일이 없는 출처는 청약마감일 → 모집공고일 순으로 대체.
- * 날짜가 하나도 없으면 null.
+ * 청약시작일 하루 종일(All-day) 일정의 Google 캘린더 템플릿 URL (FR-11.2~11.3).
+ * apply_start 없으면 null — 버튼 숨김 (FR-17.4).
  */
-export function buildCalendarEvent(notice: Notice): CalendarEvent | null {
-  const target: { stageKey: CalendarEvent["stageKey"]; label: string; date: string } | null =
-    notice.apply_start
-      ? { stageKey: "apply_start", label: "청약시작", date: notice.apply_start }
-      : notice.apply_end
-        ? { stageKey: "apply_end", label: "청약마감", date: notice.apply_end }
-        : notice.notice_date
-          ? { stageKey: "notice", label: "모집공고", date: notice.notice_date }
-          : null;
-  if (!target) return null;
-
-  const lines: string[] = [];
-  if (notice.apply_start && notice.apply_end) {
-    lines.push(`청약 접수: ${notice.apply_start} ~ ${notice.apply_end}`);
-  } else if (notice.apply_start) {
-    lines.push(`청약 접수 시작: ${notice.apply_start}`);
-  } else if (notice.apply_end) {
-    lines.push(`청약 접수 마감: ${notice.apply_end}`);
-  } else {
-    lines.push(`모집공고일: ${target.date}`);
-  }
+export function buildGoogleCalendarUrl(notice: Notice): string | null {
+  if (!notice.apply_start) return null;
+  const lines = [
+    notice.apply_end
+      ? `청약 접수: ${notice.apply_start} ~ ${notice.apply_end}`
+      : `청약 접수 시작: ${notice.apply_start}`,
+  ];
   if (notice.url) lines.push(`공고 원문: ${notice.url}`);
-
   const params = new URLSearchParams({
     action: "TEMPLATE",
-    text: `[${target.label}] ${notice.title}`,
-    dates: `${compact(target.date)}/${nextDayCompact(target.date)}`,
+    text: `[청약시작] ${notice.title}`,
+    dates: `${compact(notice.apply_start)}/${nextDayCompact(notice.apply_start)}`,
     details: lines.join("\n"),
   });
-  return { stageKey: target.stageKey, url: `${GOOGLE_CALENDAR_BASE}?${params.toString()}` };
-}
-
-/** 하위 호환: URL만 필요할 때. */
-export function buildGoogleCalendarUrl(notice: Notice): string | null {
-  return buildCalendarEvent(notice)?.url ?? null;
+  return `${GOOGLE_CALENDAR_BASE}?${params.toString()}`;
 }
