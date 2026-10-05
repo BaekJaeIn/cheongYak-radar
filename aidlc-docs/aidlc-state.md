@@ -100,6 +100,7 @@
 **v9 변경요청 (Change Request — LH·SH·GH 청약시작일 수집, 2026-10-05)**
 - [x] Requirements Analysis (standard) — Q1=A(LH 상세 API)·Q2=A(SH 상세 파싱)·Q3=A(GH 교체)·Q4=B(시작일 없으면 버튼 숨김); requirements.md §17 FR-17 ✅ 승인
 - [x] Code Generation — parsers.ts+테스트 14 / LH 상세 API 보강 / SH 재작성·재활성 / GH 메인 크롤링 교체 / 캘린더 시작일 전용 (vitest 181, tsc clean, deno check OK, SH·GH 실사이트 드라이런)
+- [x] 배포 — 29949fb push(Vercel) + Edge deploy collect + 수동 수집: 시작일 LH 48/54·SH 6/7·GH 9/12 ✅ 완료 (2026-10-05)
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER

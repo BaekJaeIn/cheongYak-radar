@@ -850,3 +850,27 @@
 **Context**: v9 Change Request — Code Generation 완료.
 
 ---
+
+## v9 커밋·푸시 / Edge 배포 대기
+**Timestamp**: 2026-10-05T01:40:00Z
+**User Input**: (없음 — 승인된 실행 계획의 커밋·배포 단계)
+**AI Response**: "커밋 29949fb(v9, 15 files) git push → Vercel 자동 배포. Edge 배포: Supabase CLI 2.119.0(npx) 준비, 이 PC에 로그인 토큰 없음 — supabase login은 대화형이라 사용자가 터미널에서 1회 로그인 필요. 주의: 프론트(시작일 전용 버튼)가 먼저 배포되어 Edge 배포·다음 수집 전까지 LH·SH·GH 공고는 버튼 미노출."
+**Context**: v9 — 배포 진행 중(사용자 로그인 대기).
+
+---
+
+## v9 Edge 배포 완료
+**Timestamp**: 2026-10-05T02:00:00Z
+**User Input**: "완료" (supabase login)
+**AI Response**: "projects list로 cheongYak-radar ref wpaukwqoxegtulvbfazj 확인. 시크릿 확인: DATA_GO_KR_API_KEY·LH_API_URL 존재, GH_API_URL 없음(기존 GH 수집기는 상시 skip이었음 → 잔존 GH 행 이슈 없음). supabase functions deploy collect --use-api 완료(기존 v21, verify_jwt 기본값 유지). 수동 수집 실행은 운영 DB 적재·신규 추천 푸시 발송이 따르므로 사용자 확인 후 진행(미확인 시 일일 cron 10:00 KST에 반영)."
+**Context**: v9 — Edge 배포 완료, 수동 수집 실행 여부 확인 대기.
+
+---
+
+## v9 수동 수집 실행 — 운영 반영 확인 / v9 완료
+**Timestamp**: 2026-10-05T02:15:00Z
+**User Input**: "바로 한번 돌려줘"
+**AI Response**: "collect 수동 실행(57s, live): apt 132·lh 54·gh 12·sh 7, inserted 19·updated 186·summarized 10, 신규 추천 0(푸시 미발송). DB 확인(최근 갱신분): LH 54건 중 시작일 48건(상세정보 API 정상 — 미보강 6건은 현장접수·영구임대 등 공급일정에 접수일시 없는 공고), SH 7건 중 6건, GH 12건 중 9건. 캘린더 버튼은 시작일 보유 공고에 노출. v9 완료."
+**Context**: v9 Change Request 완료·운영 반영.
+
+---
