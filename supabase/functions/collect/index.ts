@@ -10,7 +10,6 @@ import { GhCollector } from "./collectors/gh.ts";
 import { MyhomeComplexCollector } from "./collectors/myhome-complex.ts";
 import { ShCollector } from "./collectors/sh.ts";
 import { upsertNotices } from "./upsert.ts";
-import { summarizeMissing } from "./summarize.ts";
 import { recompute, type RecomputeResult } from "./recommend/service.ts";
 import { dispatch, dispatchTest } from "./push.ts";
 import { analyzePdf } from "./analyze.ts";
@@ -25,7 +24,6 @@ interface CollectionResult {
   perSource: SourceStat[];
   inserted: number;
   updated: number;
-  summarized: number;
   newIds: string[];
   recommend?: RecomputeResult; // U6 재계산 결과
 }
@@ -91,7 +89,6 @@ export async function run(): Promise<CollectionResult> {
 
   const { notices, perSource, mode } = await collectAll();
   const { inserted, updated } = await upsertNotices(client, notices);
-  const { summarized } = await summarizeMissing(client);
 
   // U6 재계산: 수집 후 자격·점수 갱신 → 신규 추천 산출 (BR-U6-13a)
   const rec = await recompute(client);
@@ -106,7 +103,6 @@ export async function run(): Promise<CollectionResult> {
     perSource,
     inserted: inserted.length,
     updated: updated.length,
-    summarized,
     newIds: inserted,
     recommend: rec,
   };

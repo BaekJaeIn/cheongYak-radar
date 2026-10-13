@@ -6,7 +6,6 @@ import { todayKST } from "@/features/notices/query-builder";
 import { DetailHeader } from "@/features/detail/DetailHeader";
 import { ScheduleTimeline } from "@/features/detail/ScheduleTimeline";
 import { EligibilityDetail } from "@/features/detail/EligibilityDetail";
-import { AiSummary } from "@/features/detail/AiSummary";
 import { DetailFacts } from "@/features/detail/DetailFacts";
 import { SourceLink } from "@/features/detail/SourceLink";
 
@@ -33,7 +32,6 @@ export default async function NoticeDetailPage({ params }: { params: { id: strin
       <DetailHeader notice={notice} rec={rec} today={today} />
       <ScheduleTimeline notice={notice} today={today} />
       <EligibilityDetail rec={rec} eligibility={notice.eligibility} />
-      <AiSummary summary={notice.eligibility_summary} />
       <DetailFacts notice={notice} />
       <SourceLink url={notice.url} />
     </div>

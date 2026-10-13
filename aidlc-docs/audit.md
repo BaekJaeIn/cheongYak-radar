@@ -874,3 +874,11 @@
 **Context**: v9 Change Request 완료·운영 반영.
 
 ---
+
+## v10 — AI 자격요약 제거
+**Timestamp**: 2026-10-13T00:00:00Z
+**User Input**: "ai로 공고문 읽어오는 기능 제거해줘" (확인 질문 응답: "공고 상세의 AI 자격요약" — 공고분석 탭은 유지)
+**AI Response**: "AI 기능 2종(공고분석 탭 / 상세 AI 자격요약) 중 대상 확인 후 AI 자격요약만 제거. Deleted supabase/functions/collect/summarize.ts·src/features/detail/AiSummary.tsx, index.ts에서 summarizeMissing 호출·결과 summarized 필드 제거, notice/[id]/page.tsx AiSummary 제거, README·.env.example·criteria.ts 주석 갱신. DB eligibility_summary 컬럼·타입은 유지(마이그레이션 없음, 미사용). GEMINI_API_KEY는 공고분석이 계속 사용. 검증: vitest 181·tsc clean·deno check·next build OK. 커밋·푸시·Edge 배포는 사용자 확인 후."
+**Context**: v10 소규모 변경(기능 제거) — 경량 진행(v5/v7 선례).
+
+---

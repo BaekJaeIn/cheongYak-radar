@@ -1,7 +1,7 @@
 // CriteriaExtractor (C28) — 공고 텍스트 → 구조화 자격조건(EligibilityCriteria).
 // 순수·베스트에포트(부분 채움 허용). Deno/Node 공통 — vitest 테스트 가능.
 // 근거: components.md C28, requirements.md §12.2 FR-9 / §12.4(U1 보강)
-// 정밀 파싱은 Claude 보조(summarize 경로)로 보완 가능. 여기서는 규칙 기반 1차 추출.
+// 규칙 기반 1차 추출.
 
 import type { EligibilityCriteria } from "./types.ts";
 

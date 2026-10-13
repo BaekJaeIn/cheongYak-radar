@@ -13,10 +13,9 @@
 - **공고 자동 수집** — 청약홈·마이홈포털(LH)·SH·민간임대 공고를 매일 자동 수집·정규화 후 DB upsert (공고번호 기준 중복 제거)
 - **개인 맞춤 추천** — 가구 프로필 기반 매칭/스코어링 엔진으로 공고를 점수화하고 추천 이유(매칭 사유)를 함께 제공
 - **공고 피드** — 유형 배지(분양·LH임대·SH임대·민간임대), NEW 배지, D-day 카운트다운, 마감 공고 자동 숨김
-- **공고 상세** — 청약 일정 타임라인, 면적별 정보, 자격조건 요약(AI), 원문 링크
+- **공고 상세** — 청약 일정 타임라인, 면적별 정보, 원문 링크
 - **캘린더 추가** — 공고 상세에서 청약시작일을 Google 캘린더 종일 일정으로 추가 (삼성캘린더 등 계정 동기화 캘린더에 표시, 계정 연동 불필요)
 - **공고분석 (PDF 자격판정)** — 원하는 공고 PDF를 업로드하면 Gemini가 자격 기준을 추출하고, 가구 프로필 기준으로 공급유형별 지원 가능/조건부/불가를 판정 (프로필은 LLM에 전송되지 않음)
-- **AI 자격조건 요약** — Google Gemini로 복잡한 자격조건 원문을 요약
 - **북마크** — 관심 공고 저장, 마감 임박 정렬
 - **PWA + 웹 푸시** — 홈화면 설치, 신규/마감임박 공고 푸시 알림 (제목 표시 + 클릭 시 상세 이동)
 - **프로필 연동 자동 재계산** — 프로필 변경 시 DB 트리거로 추천 즉시 재계산
@@ -30,7 +29,7 @@
 | Frontend   | Next.js 14 (App Router), TypeScript, Tailwind CSS           |
 | PWA        | 서비스워커(`public/sw.js`), `manifest.json`, Web Push API   |
 | Backend/DB | Supabase (PostgreSQL, Edge Functions, pg_cron, Vault)       |
-| AI 요약    | Google Gemini (`gemini-2.5-flash`)                          |
+| AI 분석    | Google Gemini (`gemini-2.5-flash`)                          |
 | 배포       | Vercel (프론트엔드) · Supabase (DB / Edge Functions / cron) |
 | 테스트     | Vitest                                                      |
 
@@ -57,7 +56,6 @@ supabase/
 ├── functions/collect/       # 공고 수집 Edge Function
 │   ├── collectors/          # apply-home, lh, sh, myhome-complex, gh
 │   ├── recommend/           # 매칭/스코어링 추천 엔진
-│   ├── summarize.ts         # Gemini 자격조건 요약
 │   ├── analyze.ts           # 공고 PDF 자격판정 (Gemini 추출 → 매칭)
 │   └── normalize.ts, upsert.ts, criteria.ts ...
 ├── migrations/              # DB 스키마 · cron · 트리거
@@ -103,7 +101,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_URL`      | Supabase 프로젝트 URL                                         |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 조회용 anon key (RLS 보호)                                    |
 | `SUPABASE_SERVICE_ROLE_KEY`     | 수집/쓰기용 — **서버 전용, 커밋 금지**                        |
-| `GEMINI_API_KEY`                | 자격조건 AI 요약 ([발급](https://aistudio.google.com/apikey)) |
+| `GEMINI_API_KEY`                | 공고분석(PDF 자격판정) ([발급](https://aistudio.google.com/apikey)) |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`  | 웹 푸시 공개키 (`npx web-push generate-vapid-keys`)           |
 | `VAPID_PRIVATE_KEY`             | 웹 푸시 비공개키 — **서버 전용, 노출 금지**                   |
 | `COLLECT_MODE`                  | `mock`(목업) 또는 `live`(실제 API)                            |
@@ -141,7 +139,6 @@ Supabase pg_cron (매일, KST)
   └── Edge Function: collect
         ├── 청약홈 / LH / SH / 민간임대 API·크롤링 호출
         ├── normalize → 추천 스코어링 → notices upsert (공고번호 기준)
-        ├── Gemini 자격조건 요약
         └── 신규/마감임박 공고 Web Push 발송
 
 Next.js 앱
