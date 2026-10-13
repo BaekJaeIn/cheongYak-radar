@@ -882,3 +882,11 @@
 **Context**: v10 소규모 변경(기능 제거) — 경량 진행(v5/v7 선례).
 
 ---
+
+## v10 커밋·푸시·Edge 배포
+**Timestamp**: 2026-10-13T00:20:00Z
+**User Input**: "진행해줘"
+**AI Response**: "커밋 b92a87c(v10) git push → Vercel 자동 배포. supabase functions deploy collect 완료(summarize 제외 번들). 수동 수집 미실행(불필요)."
+**Context**: v10 완료·배포.
+
+---
